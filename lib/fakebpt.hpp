@@ -65,29 +65,21 @@ public:
         std::fstream file(filename,std::ios_base::in|std::ios_base::out|std::ios_base::binary);
         T1 tmp1;
         T2 tmp2;
-        //tellg tellp
         int length=file.seekg(0,std::ios_base::end).tellg();
         file.seekg(0,std::ios_base::beg);
-        //std::cerr<<"length"<<length<<std::endl;
         while (file.tellg()<length){
-            //std::cerr<<"file "<<file.tellg()<<" "<<sizeof(tmp1)<<std::endl;
             file.read(reinterpret_cast<char *>(&tmp1),sizeof(tmp1));
-            //file.seekg(sizeof(tmp1),std::ios_base::cur);
             file.read(reinterpret_cast<char *>(&tmp2),sizeof(tmp2));
-            //file.seekg(sizeof(tmp2),std::ios_base::cur);
             mp[tmp1]=tmp2;
         }
         file.close();
-        //std::cerr<<"construct end"<<std::endl;
     }
     ~FakeBpt(){
         std::ofstream outfile(fname,std::ios_base::out|std::ios_base::binary);
         outfile.seekp(0,std::ios_base::beg);
         for (auto i:mp){
             outfile.write(reinterpret_cast<const char *>(&i.first),sizeof(i.first));
-            //outfile.seekp(sizeof(i.first),std::ios_base::cur);
             outfile.write(reinterpret_cast<const char *>(&i.second),sizeof(i.second));
-            //outfile.seekp(sizeof(i.second),std::ios_base::cur);
         }
         outfile.close();
     }

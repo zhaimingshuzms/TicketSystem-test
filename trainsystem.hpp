@@ -11,6 +11,7 @@
 #include "lib/vector.hpp"
 #include "lib/algorithm.hpp"
 #include "input_traits.hpp"
+#include "BPlusTree.h"
 #include <map>
 typedef std::string STR;
 typedef unsigned char CHA;
@@ -138,6 +139,7 @@ class trainsystem{
 public:
     trainsystem():list("./savedata/releasetrain.txt"),con("./savedata/train.txt"){
     }
+    //hao xiang zi sha
     bool add_train(const parse &in){
         if (con.count(in["-i"])) return false;
         //std::cerr<<"addsuccess"<<in["-i"]<<std::endl;

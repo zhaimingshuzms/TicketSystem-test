@@ -55,5 +55,15 @@ public:
             if (ch[i]!=s.ch[i]) return ch[i]>s.ch[i];
         return top>s.top;
     }
+    bool operator >=(const MYSTR & s) const{
+        for (UINT i=0; i<top&&i<s.top; ++i)
+            if (ch[i]!=s.ch[i]) return ch[i]>s.ch[i];
+        return top>=s.top;
+    }
+    bool operator <=(const MYSTR & s) const{
+        for (UINT i=0; i<top&&i<s.top; ++i)
+            if (ch[i]!=s.ch[i]) return ch[i]<s.ch[i];
+        return top<=s.top;
+    }
 };
 #endif //TICKETSYSTEM_MYSTRING_HPP

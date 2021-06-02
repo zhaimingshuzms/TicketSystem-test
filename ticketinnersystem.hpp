@@ -12,6 +12,7 @@
 #include "lib/algorithm.hpp"
 #include "lib/vector.hpp"
 #include "trainsystem.hpp"
+#include "BPlusTree.h"
 #include <map>
 #include "lib/fakebpt.hpp"
 typedef std::string STR;
@@ -45,6 +46,9 @@ struct exact_train{
     bool operator <(const exact_train &tr) const{
         return trainID<tr.trainID||(trainID==tr.trainID&&DayID<tr.DayID);
     }
+    bool operator ==(const exact_train &tr) const{
+        return trainID==tr.trainID&&DayID==tr.DayID;
+    }
 };
 struct firsttraininfo{
     MYSTR<20> trainID;
@@ -61,10 +65,10 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    FakeBpt <std::pair<MYSTR<30>,UINT>,traininfo> c;//multimap hai mei gai
-    FakeBpt <std::pair<MYSTR<30>,UINT>,MYSTR<20> > d;
-    FakeBpt <std::pair<MYSTR<20>,UINT>,order> orderlist;
-    FakeBpt <std::pair<exact_train,UINT>,order> pendingqueue;
+    FakeBpt<std::pair<MYSTR<30>,UINT>,traininfo> c;//multimap hai mei gai
+    FakeBpt<std::pair<MYSTR<30>,UINT>,MYSTR<20> > d;
+    FakeBpt<std::pair<MYSTR<20>,UINT>,order> orderlist;
+    FakeBpt<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
     UINT trainnum;
