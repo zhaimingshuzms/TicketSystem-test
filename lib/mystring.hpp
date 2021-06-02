@@ -22,6 +22,11 @@ public:
         for (auto i:s) ch[top++]=i;
         //if (top>N) throw;//????
     }
+    MYSTR(const char * s){
+        memset(ch,0,sizeof(ch));
+        top=0;
+        for (UINT i=0; s[i]; ++i) ch[top++]=s[i];
+    }
     char & operator [](const UINT &pos){
         //if (pos>=N) throw;
         return ch[pos];

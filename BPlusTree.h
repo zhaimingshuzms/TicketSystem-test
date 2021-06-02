@@ -302,7 +302,7 @@ public:
         long pos = root;
         node *n;
         n = new node;
-        for (int i = 0; i < depth; i++) {
+        for (int i = 0; i < depth; i++){
             *n = file->read(pos);
             int j;
             for (j = 0; j < n->size; j++) if (n->index[j] >= key) break;

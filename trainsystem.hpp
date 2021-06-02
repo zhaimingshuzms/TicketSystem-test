@@ -65,7 +65,7 @@ public:
         leavingTimes[0]=0;
         for (UINT i=1; i<stationNum; ++i){
             arrivalTimes[i]=leavingTimes[i-1]+travelTimes[i];
-            if (i<stationNum) leavingTimes[i]=arrivalTimes[i]+stopoverTimes[i];//????
+            if (i<stationNum-1) leavingTimes[i]=arrivalTimes[i]+stopoverTimes[i];//????
         }
         priceprefix[0]=0;
         for (UINT i=1; i<stationNum; ++i) priceprefix[i]=priceprefix[i-1]+prices[i];

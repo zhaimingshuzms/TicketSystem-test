@@ -244,6 +244,7 @@ public:
         if (!t.inrange(sid,in["-d"])) return false;
         UINT DayID=t.DayID(sid,in["-d"]);
         UINT required=strtonum(in["-n"]);
+        if (required>t.seatNum) return false;//6.2
         order o(in["-u"],in["-i"],DayID,sid,tid,required,1);
         //if (in.count("-debug")) std::cerr<<t.seat(sid,tid,DayID)<<std::endl;
         if (satisfied(t,o)){

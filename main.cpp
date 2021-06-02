@@ -24,4 +24,7 @@ int main() {
         if (!s.respond(input)) break;
     }
     return 0;
+    /*BPlusTree<MYSTR<21>,train> t("test.bin");
+    auto tmp=t.find(MYSTR<21>("zzzz"));
+    std::cout<<tmp.second<<" "<<std::endl;*/
 }
