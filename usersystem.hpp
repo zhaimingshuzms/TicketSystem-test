@@ -9,7 +9,7 @@
 #include <iostream>
 #include "./lib/numas.hpp"
 #include "./lib/mystring.hpp"
-#include "lib/FakeBpt.hpp"
+#include "lib/fakeBpt.hpp"
 #include "input_traits.hpp"
 #include "BPlusTree.h"
 typedef std::string STR;
