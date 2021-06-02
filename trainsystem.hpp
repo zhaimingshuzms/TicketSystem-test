@@ -19,10 +19,10 @@ const int DAY_NUM=92;
 const int STATION_NUM=100;
 class train{
 public:
-    MYSTR<20> trainID;
+    MYSTR<21> trainID;
     UINT stationNum;
     UINT seatNum;
-    MYSTR<30> stations[STATION_NUM];
+    MYSTR<31> stations[STATION_NUM];
     UINT prices[STATION_NUM];
     OTime startOTime;
     OTime travelTimes[STATION_NUM];
@@ -38,7 +38,7 @@ public:
     Time startTime;
     train(){
     }
-    train(const MYSTR<20> &s1,const UINT &s2,const UINT &s3,const STR &s4,
+    train(const MYSTR<21> &s1,const UINT &s2,const UINT &s3,const STR &s4,
           const STR &s5,const STR &s6,const STR &s7,const STR &s8,const STR &s9,const STR &s10){
         trainID=s1;
         stationNum=s2;
@@ -89,7 +89,7 @@ public:
         }
         return true;
     }
-    UINT findstation(const MYSTR<30> &s){
+    UINT findstation(const MYSTR<31> &s){
         for (UINT i=0; i<stationNum; ++i)
             if (stations[i]==s) return i;
         return STATION_NUM;
@@ -127,15 +127,15 @@ public:
     }
 };
 struct ticketinfo{
-    MYSTR<20> trainID;
+    MYSTR<21> trainID;
     Time t1,t2;
     UINT seat,price;
 };
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
-    FakeBpt<MYSTR<20>,bool> list;//modified
-    FakeBpt<MYSTR<20>,train> con;
+    FakeBpt<MYSTR<21>,bool> list;//modified
+    FakeBpt<MYSTR<21>,train> con;
 public:
     trainsystem():list("releasetrain.bin"),con("train.bin"){
     }
@@ -158,7 +158,7 @@ public:
         if (!con.count(in["-i"])) return false;
         return con[in["-i"]].query(std::cout,in["-d"]);
     }
-    ticketinfo query_ticket(const MYSTR<20> &trainID,const MYSTR<30> &s,const MYSTR<30> &t,const Date &d){
+    ticketinfo query_ticket(const MYSTR<21> &trainID,const MYSTR<31> &s,const MYSTR<31> &t,const Date &d){
         train tr=con[trainID];
         UINT sid=tr.findstation(s),tid=tr.findstation(t);
         UINT dayid=tr.DayID(sid,d);

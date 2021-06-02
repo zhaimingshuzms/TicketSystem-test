@@ -17,31 +17,31 @@
 #include "lib/fakebpt.hpp"
 typedef std::string STR;
 struct traininfo{
-    MYSTR<20> trainID;
+    MYSTR<21> trainID;
     Date date_b,date_e;
     traininfo(){
     }
-    traininfo(const MYSTR<20> &s,const Date &d1,const Date &d2):trainID(s),date_b(d1),date_e(d2){
+    traininfo(const MYSTR<21> &s,const Date &d1,const Date &d2):trainID(s),date_b(d1),date_e(d2){
     }
 };
 struct order{
-    MYSTR<20> userID;
-    MYSTR<20> trainID;
+    MYSTR<21> userID;
+    MYSTR<21> trainID;
     UINT dayID;
     UINT sid,tid;
     UINT num;
     UINT stat;//0 pending 1 success 2 refunded
     order(){
     }
-    order(const MYSTR<20> &s1,const MYSTR<20> &s2,UINT s3,UINT s4,UINT s5,UINT s6,UINT s7):userID(s1),trainID(s2),dayID(s3),sid(s4),tid(s5),num(s6),stat(s7){
+    order(const MYSTR<21> &s1,const MYSTR<21> &s2,UINT s3,UINT s4,UINT s5,UINT s6,UINT s7):userID(s1),trainID(s2),dayID(s3),sid(s4),tid(s5),num(s6),stat(s7){
     }
 };
 struct exact_train{
-    MYSTR<20> trainID;
+    MYSTR<21> trainID;
     UINT DayID;
     exact_train(){
     }
-    exact_train(const MYSTR<20> &s1,UINT s2):trainID(s1),DayID(s2){
+    exact_train(const MYSTR<21> &s1,UINT s2):trainID(s1),DayID(s2){
     }
     bool operator <(const exact_train &tr) const{
         return trainID<tr.trainID||(trainID==tr.trainID&&DayID<tr.DayID);
@@ -51,12 +51,12 @@ struct exact_train{
     }
 };
 struct firsttraininfo{
-    MYSTR<20> trainID;
+    MYSTR<21> trainID;
     OTime stime;
     OTime mtime;
     UINT price;
     UINT seat;
-    firsttraininfo(const MYSTR<20> &s1,const OTime &s2,const OTime &s3,const UINT &s4,const UINT &s5):trainID(s1),stime(s2),mtime(s3),price(s4),seat(s5){
+    firsttraininfo(const MYSTR<21> &s1,const OTime &s2,const OTime &s3,const UINT &s4,const UINT &s5):trainID(s1),stime(s2),mtime(s3),price(s4),seat(s5){
     }
     firsttraininfo(){
     }
@@ -65,9 +65,9 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    FakeBpt<std::pair<MYSTR<30>,UINT>,traininfo> c;//multimap hai mei gai
-    FakeBpt<std::pair<MYSTR<30>,UINT>,MYSTR<20> > d;
-    FakeBpt<std::pair<MYSTR<20>,UINT>,order> orderlist;
+    FakeBpt<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
+    FakeBpt<std::pair<MYSTR<31>,UINT>,MYSTR<21> > d;
+    FakeBpt<std::pair<MYSTR<21>,UINT>,order> orderlist;
     FakeBpt<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
@@ -156,7 +156,7 @@ public:
         if (pr.size())
             for (auto i=0; i<pr.size(); ++i)
                 vs.push_back(pr[i].second);
-        sjtu::map<MYSTR<30>,sjtu::vector<firsttraininfo> > mp;
+        sjtu::map<MYSTR<31>,sjtu::vector<firsttraininfo> > mp;
         for (auto i:vs)
             if (i.date_b <= in["-d"] && Date(in["-d"]) <= i.date_e) {
                 train t=pts->con[i.trainID];
@@ -229,7 +229,7 @@ public:
                 }
             }
         }
-        if (minn<1e9) std::cout<<ss.str(); else std::cout<<0<<'\n';
+        if (minn<1e9) std::cout << ss.str(); else std::cout<<0<<'\n';
         return true;
     }
     bool satisfied(train &t,const order &o){

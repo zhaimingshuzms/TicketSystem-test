@@ -91,7 +91,7 @@ private:
         node *n = &the_node[dep];
         int j = the_sub[dep];
         n->size--;
-        for (int i = j; i < n->size; i++) n->index[i] = n->index[i + 1], n->son_address[i+1] = n->son_address[i + 2];
+        for (int i = j; i < n->size; i++) n->index[i] = n->index[i + 1], n->son_address[i + 1] = n->son_address[i + 2];
         if (!dep) {
             if (n->size) file->save(*n, node_pos[0]);
             else depth--, root = node_pos[1];
@@ -101,7 +101,7 @@ private:
             file->save(*n, node_pos[dep]);
             return;
         }
-        if (the_sub[dep-1]==the_node[dep-1].size) {//get the former node
+        if (the_sub[dep - 1] == the_node[dep - 1].size) {//get the former node
             the_sub[dep + 1] = the_sub[dep - 1];
             the_sub[dep - 1] = the_node[dep - 1].size - 1;
             node_pos[dep + 1] = node_pos[dep];
@@ -116,8 +116,8 @@ private:
         }
         node *n1 = &the_node[dep + 1];
         if (n->size + n1->size >= M - 1) {//do a fake split
-            Key tmp_key[M + 2];
-            long tmp_address[M + 2];
+            Key tmp_key[n->size + n1->size+3];
+            long tmp_address[n->size + n1->size+3];
             for (int i = 0; i < n->size; i++) tmp_address[i] = n->son_address[i], tmp_key[i] = n->index[i];
             tmp_address[n->size] = n->son_address[n->size];
             tmp_key[n->size] = the_node[dep - 1].index[the_sub[dep - 1]];
@@ -130,10 +130,13 @@ private:
             n->son_address[n->size] = tmp_address[n->size];
             for (int i = 0; i < n1->size; i++)
                 n1->son_address[i] = tmp_address[i + 1 + n->size], n1->index[i] = tmp_key[i + 1 + n->size];
+            n1->son_address[n1->size] = tmp_address[n->size + n1->size + 1];
+            the_node[dep - 1].index[the_sub[dep - 1]] = tmp_key[n->size];
             file->save(*n, node_pos[dep]);
             file->save(*n1, node_pos[dep + 1]);
             file->save(the_node[dep - 1], node_pos[dep - 1]);
             return;
+
         }
         //merge again
         n->index[n->size] = the_node[dep - 1].index[the_sub[dep - 1]];
@@ -199,6 +202,7 @@ public:
         node n1;
         n1.nxt = n->nxt, n->nxt = file->End();
         n->size = M / 2, n1.size = M - M / 2;
+        //****(this line can be deleted)
         for (int i = 0; i < n->size; i++) n->index[i] = tmp_key[i], n->data_value[i] = tmp_data[i];
         for (int i = n->size; i < M; i++) n1.index[i - n->size] = tmp_key[i], n1.data_value[i - n->size] = tmp_data[i];
         file->save(n1);
@@ -245,7 +249,7 @@ public:
             return true;
         }
         //use passed_node[depth] to present the bro node
-        if (n->nxt == -1) {//get the former node
+        if (passed_sub[depth - 2] == passed_node[depth - 2].size) {//get the former node
             passed_sub[depth] = passed_sub[depth - 2];
             passed_sub[depth - 2] = passed_node[depth - 2].size - 1;
             passed_pos[depth] = passed_pos[depth - 1];
@@ -260,13 +264,14 @@ public:
         }
         node *n1 = &passed_node[depth];
         if (n->size + n1->size >= M) {//do a fake split
-            Key tmp_key[M + 2], erase_in_no_leaf = n1->index[0];
-            Data tmp_data[M + 2];
+            Key tmp_key[n->size + n1->size+2];
+            Data tmp_data[n->size + n1->size+2];
             for (int i = 0; i < n->size; i++) tmp_data[i] = n->data_value[i], tmp_key[i] = n->index[i];
             for (int i = n->size; i < n->size + n1->size; i++)
                 tmp_data[i] = n1->data_value[i - n->size], tmp_key[i] = n1->index[i - n->size];
+            const Key old = tmp_key[n->size];
             int tmp_size = n->size + n1->size;
-            n->size = tmp_size / 2, n1->size = tmp_size - n->size;
+            n->size = (tmp_size + 1) / 2, n1->size = tmp_size - n->size;
             for (int i = 0; i < n->size; i++) n->data_value[i] = tmp_data[i], n->index[i] = tmp_key[i];
             for (int i = 0; i < n1->size; i++)
                 n1->data_value[i] = tmp_data[i + n->size], n1->index[i] = tmp_key[i + n->size];
@@ -274,7 +279,7 @@ public:
             file->save(*n1, passed_pos[depth]);
             //renew the no_leaf node
             for (int i = depth - 2; i >= 0; i--)
-                if (passed_node[i].index[passed_sub[i]] == erase_in_no_leaf) {
+                if (passed_node[i].index[passed_sub[i]] == old) {
                     passed_node[i].index[passed_sub[i]] = n1->index[0];
                     file->save(passed_node[i], passed_pos[i]);
                     break;
@@ -296,14 +301,18 @@ public:
         if (!leaf_size) return make_pair(data, false);
         long pos = root;
         node *n;
-        n=new node;
+        n = new node;
         for (int i = 0; i < depth; i++) {
             *n = file->read(pos);
             int j;
             for (j = 0; j < n->size; j++) if (n->index[j] >= key) break;
             if (i == depth - 1) {
-                if (j == n->size || n->index[j] > key) {delete n; return make_pair(data, false);}
-                delete n;return make_pair(n->data_value[j], true);
+                if (j == n->size || n->index[j] > key) {
+                    delete n;
+                    return make_pair(data, false);
+                }
+                delete n;
+                return make_pair(n->data_value[j], true);
             }
             if (j == n->size || n->index[j] > key) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
@@ -323,7 +332,10 @@ public:
             if (j == n->size || n->index[j] > key1) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
         }
-        if (j == n->size || n->index[j] > key1) {delete n; return vec;}
+        if (j == n->size || n->index[j] > key1) {
+            delete n;
+            return vec;
+        }
         while (n->index[j] != key2) {
             vec.push_back(make_pair(n->index[j], n->data_value[j]));
             if (j == n->size) j = 0, *n = file->read(n->nxt);
@@ -343,14 +355,14 @@ public:
         if (!leaf_size) return;
         long pos = root;
         node *n;
-        n=new node;
+        n = new node;
         for (int i = 0; i < depth; i++) {
             *n = file->read(pos);
             int j;
             for (j = 0; j < n->size; j++) if (n->index[j] >= key) break;
             if (i == depth - 1 && j != n->size && n->index[j] <= key) {
-                    n->data_value[j] = newData;
-                    file->save(*n, pos);
+                n->data_value[j] = newData;
+                file->save(*n, pos);
             }
             if (j == n->size || n->index[j] > key) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
@@ -370,7 +382,9 @@ public:
     Data operator[](const Key &key) { return _find(key).first; }
 
     pair<Data, bool> find(const Key &key) { return _find(key); }
-    bool count(const Key &key){return find(key).second;}
+    bool count(const Key &key) {
+        return _find(key).second;
+    }
 };
 
 #endif //TICKETS_BPLUSTREE_H

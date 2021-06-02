@@ -9,18 +9,18 @@
 #include <iostream>
 #include "./lib/numas.hpp"
 #include "./lib/mystring.hpp"
-#include "lib/fakebpt.hpp"
+#include "lib/FakeBpt.hpp"
 #include "input_traits.hpp"
 #include "BPlusTree.h"
 typedef std::string STR;
 typedef std::size_t UINT;
 struct userdata{//er jin zhi wen jian xu yao
-    MYSTR<20> username;
-    MYSTR<30> password;
-    MYSTR<20> name;
-    MYSTR<30> mailAddr;
+    MYSTR<21> username;
+    MYSTR<31> password;
+    MYSTR<21> name;
+    MYSTR<31> mailAddr;
     UINT privilege;
-    userdata(const MYSTR<20> &s1=MYSTR<20>(""),const MYSTR<30> &s2=MYSTR<30>(""),const MYSTR<20> &s3=MYSTR<20>(""),const MYSTR<30> &s4=MYSTR<30>(""),const UINT &u=0):
+    userdata(const MYSTR<21> &s1=MYSTR<21>(""),const MYSTR<31> &s2=MYSTR<31>(""),const MYSTR<21> &s3=MYSTR<21>(""),const MYSTR<31> &s4=MYSTR<31>(""),const UINT &u=0):
             username(s1),password(s2),name(s3),mailAddr(s4),privilege(u){
     }
     friend std::ostream & operator <<(std::ostream & os,const userdata &ud){
@@ -28,12 +28,12 @@ struct userdata{//er jin zhi wen jian xu yao
     }
 };
 class usersystem{
-    FakeBpt<MYSTR<20>,userdata> con;
-    sjtu::map<MYSTR<20>,bool> loginlist;
+    FakeBpt<MYSTR<21>,userdata> con;
+    sjtu::map<MYSTR<21>,bool> loginlist;
 public:
     usersystem():con("user.bin"){
     }
-    bool already_login(const MYSTR<20> &s){
+    bool already_login(const MYSTR<21> &s){
         if (loginlist.count(s)) return true;
         return false;
     }

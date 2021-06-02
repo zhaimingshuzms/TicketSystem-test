@@ -20,8 +20,10 @@ public:
         memset(ch,0,sizeof(ch));
         top=0;
         for (auto i:s) ch[top++]=i;
+        //if (top>N) throw;//????
     }
     char & operator [](const UINT &pos){
+        //if (pos>=N) throw;
         return ch[pos];
     }
     UINT size(){
