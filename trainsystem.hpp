@@ -137,7 +137,7 @@ class trainsystem{
     FakeBpt<MYSTR<20>,bool> list;//modified
     FakeBpt<MYSTR<20>,train> con;
 public:
-    trainsystem():list("./savedata/releasetrain.txt"),con("./savedata/train.txt"){
+    trainsystem():list("releasetrain.bin"),con("train.bin"){
     }
     //hao xiang zi sha
     bool add_train(const parse &in){

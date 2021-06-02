@@ -75,9 +75,9 @@ class ticketinnersystem{
     UINT ordernum;
     STR stat[3]={"pending","success","refunded"};
 public:
-    ticketinnersystem(trainsystem *p):pts(p),c("./savedata/c.txt"),d("./savedata/d.txt"),orderlist("./savedata/orderlist.txt"),pendingqueue("./savedata/pendingqueue.txt"){
+    ticketinnersystem(trainsystem *p):pts(p),c("c.bin"),d("d.bin"),orderlist("orderlist.bin"),pendingqueue("pendingqueue.bin"){
         vr=new ticketinfo[TRAINNUM];
-        std::ifstream infile("./savedata/num.txt",std::ios_base::in|std::ios_base::binary);
+        std::ifstream infile("num.bin",std::ios_base::in|std::ios_base::binary);
         if (!infile.is_open()) trainnum=0,ordernum=0;
         else{
             infile.read(reinterpret_cast<char *>(&trainnum),sizeof(trainnum));
@@ -86,7 +86,7 @@ public:
         infile.close();
     }
     ~ticketinnersystem(){
-        std::ofstream outfile("./savedata/num.txt",std::ios_base::out|std::ios_base::binary);
+        std::ofstream outfile("num.bin",std::ios_base::out|std::ios_base::binary);
         outfile.write(reinterpret_cast<const char *>(&trainnum),sizeof(trainnum));
         outfile.write(reinterpret_cast<const char *>(&ordernum),sizeof(ordernum));
         outfile.close();

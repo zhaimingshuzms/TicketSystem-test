@@ -31,7 +31,7 @@ class usersystem{
     FakeBpt<MYSTR<20>,userdata> con;
     sjtu::map<MYSTR<20>,bool> loginlist;
 public:
-    usersystem():con("./savedata/user.txt"){
+    usersystem():con("user.bin"){
     }
     bool already_login(const MYSTR<20> &s){
         if (loginlist.count(s)) return true;
