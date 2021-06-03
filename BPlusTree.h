@@ -9,8 +9,7 @@
 using namespace std;
 
 template<class Key, class Data, const int M = 200>
-class BPlusTree {
-private:
+struct BPlusTree {
     struct node {
         long son_address[M + 5] = {0};
         Data data_value[M + 5];
@@ -150,10 +149,21 @@ private:
 
 public:
     explicit BPlusTree(const string &file_name) {
+        fstream f;
+        f.open("BPlusTree.bin",ios_base::in|ios_base::out|ios_base::binary);
+        if (!f) root=-1,depth=0,leaf_size=0;
+        else f.read(reinterpret_cast<char *>(this),sizeof(*this));
+        f.close();
         file = new FileManager<node>(file_name);
     }
 
-    ~BPlusTree() { delete file; }
+    ~BPlusTree() {
+        fstream f;
+        f.open("BPlusTree.bin",ios_base::out|ios_base::binary);
+        f.write(reinterpret_cast<const char *>(this),sizeof(*this));
+        f.close();
+        delete file;
+    }
 
     bool insert(const Key &key, const Data &data) {
         if (!leaf_size) {//when the tree is empty
@@ -315,7 +325,7 @@ public:
                 delete n;
                 return t;
             }
-            if (j == n->size || n->index[j] > key) pos = n->son_address[j];
+            if (j == n->size || n->index[j] > key) pos = n->son_address[j];//???
             else pos = n->son_address[j + 1];
         }
     }
