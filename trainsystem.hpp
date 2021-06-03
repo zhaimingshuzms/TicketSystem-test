@@ -134,8 +134,8 @@ struct ticketinfo{
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
-    FakeBpt<MYSTR<21>,bool> list;//modified
-    FakeBpt<MYSTR<21>,train> con;
+    BPlusTree<MYSTR<21>,bool> list;//modified
+    BPlusTree<MYSTR<21>,train,10> con;
 public:
     trainsystem():list("releasetrain.bin"),con("train.bin"){
     }

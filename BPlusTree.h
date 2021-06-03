@@ -381,7 +381,9 @@ public:
 
     Data operator[](const Key &key) { return _find(key).first; }
 
-    pair<Data, bool> find(const Key &key) { return _find(key); }
+    pair<Data, bool> find(const Key &key) {
+        return _find(key);
+    }
     bool count(const Key &key) {
         return _find(key).second;
     }

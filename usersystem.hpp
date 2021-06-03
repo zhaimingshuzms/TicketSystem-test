@@ -28,7 +28,7 @@ struct userdata{//er jin zhi wen jian xu yao
     }
 };
 class usersystem{
-    FakeBpt<MYSTR<21>,userdata> con;
+    BPlusTree<MYSTR<21>,userdata> con;
     sjtu::map<MYSTR<21>,bool> loginlist;
 public:
     usersystem():con("user.bin"){
