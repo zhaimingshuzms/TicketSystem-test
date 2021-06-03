@@ -17,6 +17,19 @@ typedef std::string STR;
 typedef unsigned char CHA;
 const int DAY_NUM=92;
 const int STATION_NUM=100;
+std::fstream p;
+void saveticket(int trainind,int dayid,int id,UINT val){
+    int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+id;
+    p.seekp(offset*sizeof(UINT),ios_base::beg);
+    p.write(reinterpret_cast<const char *>(&val),sizeof(val));
+}
+UINT findticket(int trainind,int dayid,int id){
+    int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+id;
+    p.seekg(offset*sizeof(UINT),ios::beg);
+    UINT val;
+    p.read(reinterpret_cast<char *>(&val),sizeof(val));
+    return val;
+}
 class train{
 public:
     MYSTR<21> trainID;
@@ -31,7 +44,8 @@ public:
     CHA type;
     //my reserved area
     UINT sellday;
-    UINT resttickets[DAY_NUM][STATION_NUM];
+    //UINT resttickets[DAY_NUM][STATION_NUM];
+    UINT trainind;
     OTime arrivalTimes[STATION_NUM];
     OTime leavingTimes[STATION_NUM];
     UINT priceprefix[STATION_NUM];
@@ -39,7 +53,7 @@ public:
     train(){
     }
     train(const MYSTR<21> &s1,const UINT &s2,const UINT &s3,const STR &s4,
-          const STR &s5,const STR &s6,const STR &s7,const STR &s8,const STR &s9,const STR &s10){
+          const STR &s5,const STR &s6,const STR &s7,const STR &s8,const STR &s9,const STR &s10,const UINT &s11){
         trainID=s1;
         stationNum=s2;
         seatNum=s3;
@@ -58,9 +72,12 @@ public:
         saleDate_e=Date(v[1]);
         type=s10[0];
         sellday=UINT(saleDate_e-saleDate_b)+1;
+
+        trainind=s11;
         for (UINT i=0; i<sellday; ++i)
             for (UINT j=0; j<stationNum; ++j)
-                resttickets[i][j]=seatNum;
+                saveticket(trainind,i,j,seatNum);
+
         arrivalTimes[0]=0;
         leavingTimes[0]=0;
         for (UINT i=1; i<stationNum; ++i){
@@ -84,7 +101,7 @@ public:
             os << "-> ";
             if (i < stationNum - 1) os << st + leavingTimes[i] <<" "; else os << "xx-xx xx:xx ";
             os << priceprefix[i]<<" ";
-            if (i < stationNum - 1) os << resttickets[d - saleDate_b][i+1]; else os << "x";
+            if (i < stationNum - 1) os << findticket(trainind,d - saleDate_b,i+1); else os << "x";
             os << '\n';
         }
         return true;
@@ -100,16 +117,16 @@ public:
     UINT seat(const UINT &sid,const UINT &tid,const UINT &dayID){
         UINT ret=seatNum;
         for (UINT i=sid+1; i<=tid; ++i)
-            ret=std::min(ret,resttickets[dayID][i]);
+            ret=std::min(ret,findticket(trainind,dayID,i));
         return ret;
     }
     void buy(const UINT &sid,const UINT &tid,const UINT &dayID,const UINT &num){
         for (UINT i=sid+1; i<=tid; ++i)
-            resttickets[dayID][i]-=num;
+            saveticket(trainind,dayID,i,findticket(trainind,dayID,i)-num);
     }
     void refund(const UINT &sid,const UINT &tid,const UINT &dayID,const UINT &num){
         for (UINT i=sid+1; i<=tid; ++i)
-            resttickets[dayID][i]+=num;
+            saveticket(trainind,dayID,i,findticket(trainind,dayID,i)+num);
     }
     UINT DayID(const UINT &id,const Date &d){
         Time t=startTime+leavingTimes[id];
@@ -134,16 +151,31 @@ struct ticketinfo{
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
-    BPlusTree<MYSTR<21>,bool> list;//modified
-    BPlusTree<MYSTR<21>,train,10> con;
+    FakeBpt<MYSTR<21>,bool> list;//modified
+    FakeBpt<MYSTR<21>,train> con;//ji de 10
+    UINT trainind;
 public:
     trainsystem():list("releasetrain.bin"),con("train.bin"){
+        p.open("ticket.bin",std::ios_base::out|std::ios_base::in|std::ios_base::binary);
+        if (!p) p.open("ticket.bin",std::ios_base::out|std::ios_base::binary);
+        p.close();
+        p.open("ticket.bin",std::ios_base::out|std::ios_base::in|std::ios_base::binary);
+
+        std::ifstream infile("num2.bin",std::ios_base::in|std::ios_base::binary);
+        if (!infile.is_open()) trainind=0;
+        else infile.read(reinterpret_cast<char *>(&trainind),sizeof(trainind));
+        infile.close();
+    }
+    ~trainsystem(){
+        std::ofstream outfile("num2.bin",std::ios_base::out|std::ios_base::binary);
+        outfile.write(reinterpret_cast<const char *>(&trainind),sizeof(trainind));
+        outfile.close();
+        p.close();
     }
     //hao xiang zi sha
     bool add_train(const parse &in){
         if (con.count(in["-i"])) return false;
-        //std::cerr<<"addsuccess"<<in["-i"]<<std::endl;
-        train t(in["-i"],strtonum(in["-n"]),strtonum(in["-m"]),in["-s"],in["-p"],in["-x"],in["-t"],in["-o"],in["-d"],in["-y"]);
+        train t(in["-i"],strtonum(in["-n"]),strtonum(in["-m"]),in["-s"],in["-p"],in["-x"],in["-t"],in["-o"],in["-d"],in["-y"],trainind++);
         con.insert(std::make_pair(in["-i"],t));
         return true;
     }

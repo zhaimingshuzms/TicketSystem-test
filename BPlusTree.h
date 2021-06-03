@@ -311,8 +311,9 @@ public:
                     delete n;
                     return make_pair(data, false);
                 }
+                auto &&t=make_pair(n->data_value[j], true);//modified
                 delete n;
-                return make_pair(n->data_value[j], true);
+                return t;
             }
             if (j == n->size || n->index[j] > key) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
@@ -371,7 +372,10 @@ public:
     }
 
     //overload function
-    bool insert(const pair<Key, Data> &_pair) { return insert(_pair.first, _pair.second); }
+    bool insert(const pair<Key, Data> &_pair) {
+        //std::cerr<<"_pair"<<std::endl;
+        return insert(_pair.first, _pair.second);
+    }
 
     bool erase(const pair<Key, Data> &_pair) { return erase(_pair.first); }
 
@@ -384,7 +388,9 @@ public:
     pair<Data, bool> find(const Key &key) {
         return _find(key);
     }
-    bool count(const Key &key) {
+    bool
+    count(const Key &key) {
+        //std::cerr<<"count"<<std::endl;
         return _find(key).second;
     }
 };

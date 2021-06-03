@@ -16,11 +16,11 @@ public:
         memset(ch,0,sizeof(ch));
         top=0;
     }
-    MYSTR(const STR &s){
+    MYSTR(const STR &ss){//?????
+        auto s=ss.c_str();
         memset(ch,0,sizeof(ch));
         top=0;
-        for (auto i:s) ch[top++]=i;
-        //if (top>N) throw;//????
+        for (UINT i=0; s[i]; ++i) ch[top++]=s[i];
     }
     MYSTR(const char * s){
         memset(ch,0,sizeof(ch));

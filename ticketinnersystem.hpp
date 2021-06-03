@@ -65,10 +65,10 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    BPlusTree<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
-    BPlusTree<std::pair<MYSTR<31>,UINT>,MYSTR<21> > d;
-    BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
-    BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
+    FakeBpt<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
+    FakeBpt<std::pair<MYSTR<31>,UINT>,MYSTR<21> > d;
+    FakeBpt<std::pair<MYSTR<21>,UINT>,order> orderlist;
+    FakeBpt<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
     UINT trainnum;
@@ -94,22 +94,14 @@ public:
     }
     bool release_train(const parse &in){
         ++trainnum;
-       // if (in["-i"]=="imperiouswaves") std::cerr<<trainnum<<std::endl;
         if (!pts->list.count(in["-i"])&&pts->con.count(in["-i"])){
             train t=pts->con[in["-i"]];
             for (UINT i=0; i<t.stationNum-1; ++i){
-                //if (in["-i"]=="imperiouswaves") std::cerr<<t.stations[i]<<std::endl;
-//                std::cout<<t.startTime<<std::endl;
-                //c.insert(std::make_pair(std::make_pair(t.stations[i],trainnum),traininfo(t.trainID,(t.startTime+t.leavingTimes[i]).date,
-                //                                                (t.startTime+(t.saleDate_e-t.saleDate_b)*MIN_PER_DAY+t.arrivalTimes[i]).date)));
                 c.insert(std::make_pair(std::make_pair(t.stations[i],trainnum),traininfo(t.trainID,t.leavingtime(i,0).date,
                                                                                          t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
                 d.insert(std::make_pair(std::make_pair(t.stations[i+1],trainnum),t.trainID));
             }
             pts->list.update(in["-i"],true);
-//            for (auto i:c) std::cout<<i.second.trainID<<" "<<i.second.date_b<<"¡¡"<<i.second.date_e<<std::endl;
-//           std::cerr<<"release "<<in["-i"]<<" success"<<" "<<t.stationNum<<" "<<c.size()<<std::endl;
-//            for (auto i:c.mp) std::cerr<<i.first.first<<" "<<i.first.second<<std::endl;
             return true;
         }
         return false;
