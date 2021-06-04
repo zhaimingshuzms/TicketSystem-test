@@ -18,6 +18,12 @@ typedef unsigned char CHA;
 const int DAY_NUM=92;
 const int STATION_NUM=100;
 std::fstream p;
+void saveticket(int trainind,int dayid,int lid,int rid,UINT val){
+    int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+lid;
+    p.seekp(offset*sizeof(UINT),ios_base::beg);
+    for (UINT i=lid; i<=rid; ++i)
+    p.write(reinterpret_cast<const char *>(&val),sizeof(val));
+}
 void saveticket(int trainind,int dayid,int id,UINT val){
     int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+id;
     p.seekp(offset*sizeof(UINT),ios_base::beg);
@@ -32,7 +38,6 @@ UINT findticket(int trainind,int dayid,int id){
 }
 class train{
 public:
-    MYSTR<21> trainID;
     UINT stationNum;
     UINT seatNum;
     MYSTR<31> stations[STATION_NUM];
@@ -52,9 +57,8 @@ public:
     Time startTime;
     train(){
     }
-    train(const MYSTR<21> &s1,const UINT &s2,const UINT &s3,const STR &s4,
+    train(const UINT &s2,const UINT &s3,const STR &s4,
           const STR &s5,const STR &s6,const STR &s7,const STR &s8,const STR &s9,const STR &s10,const UINT &s11){
-        trainID=s1;
         stationNum=s2;
         seatNum=s3;
         sjtu::vector<STR> v=divide(s4,'|');
@@ -75,8 +79,7 @@ public:
 
         trainind=s11;
         for (UINT i=0; i<sellday; ++i)
-            for (UINT j=0; j<stationNum; ++j)
-                saveticket(trainind,i,j,seatNum);
+                saveticket(trainind,i,0,stationNum-1,seatNum);
 
         arrivalTimes[0]=0;
         leavingTimes[0]=0;
@@ -90,9 +93,9 @@ public:
         startTime.date=saleDate_b;
         //std::cout<<startTime<<" "<<saleDate_b<<" "<<saleDate_e<<" "<<saleDate_e-saleDate_e<<std::endl;
     }
-    bool query(std::ostream &os,const Date &d){
+    bool query(FakeBpt<UINT,MYSTR<21> > &trainname,std::ostream &os,const Date &d){
         if (d<saleDate_b||saleDate_e<d) return false;
-        os<<trainID<<" "<<type<<'\n';
+        os<<trainname[trainind]<<" "<<type<<'\n';
         Time st=startTime;
         st.date=d;
         for (UINT i=0; i<stationNum; ++i) {
@@ -144,18 +147,20 @@ public:
     }
 };
 struct ticketinfo{
-    MYSTR<21> trainID;
+    UINT trainID;
     Time t1,t2;
     UINT seat,price;
 };
+static FakeBpt<UINT,MYSTR<21> > trainname("trainname.bin");
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
-    BPlusTree<MYSTR<21>,bool> list;//modified
-    BPlusTree<MYSTR<21>,train,10> con;//ji de 10
+    BPlusTree<UINT,bool> list;//modified
+    BPlusTree<UINT,train,50> con;//ji de 10
+    FakeBpt<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:
-    trainsystem():list("releasetrain.bin"),con("train.bin"){
+    trainsystem():list("releasetrain.bin"),con("train.bin"),trainname2("trainname2.bin"){
         p.open("ticket.bin",std::ios_base::out|std::ios_base::in|std::ios_base::binary);
         if (!p) p.open("ticket.bin",std::ios_base::out|std::ios_base::binary);
         p.close();
@@ -174,23 +179,30 @@ public:
     }
     //hao xiang zi sha
     bool add_train(const parse &in){
-        if (con.count(in["-i"])) return false;
-        train t(in["-i"],strtonum(in["-n"]),strtonum(in["-m"]),in["-s"],in["-p"],in["-x"],in["-t"],in["-o"],in["-d"],in["-y"],trainind++);
-        con.insert(std::make_pair(in["-i"],t));
+        if (trainname2.count(in["-i"])) return false;
+        trainname.insert(std::make_pair(trainind,in["-i"]));
+        trainname2.insert(std::make_pair(in["-i"],trainind));
+        train t(strtonum(in["-n"]),strtonum(in["-m"]),in["-s"],in["-p"],in["-x"],in["-t"],in["-o"],in["-d"],in["-y"],trainind);
+        con.insert(std::make_pair(trainind,t));
+        ++trainind;
         return true;
     }
     bool delete_train(const parse &in){
-        if (!con.count(in["-i"])) return false;
-        if (list.count(in["-i"])) return false;
-        con.erase(in["-i"]);
+        auto tmp=trainname2.find(in["-i"]);
+        if (!tmp.second) return false;
+        if (list.count(tmp.first)) return false;
+        con.erase(tmp.first);
+        trainname.erase(tmp.first);
+        trainname2.erase(in["-i"]);
         //std::cerr<<"success"<<std::endl;
         return true;
     }
     bool query_train(const parse &in){
-        if (!con.count(in["-i"])) return false;
-        return con[in["-i"]].query(std::cout,in["-d"]);
+        auto tmp=trainname2.find(in["-i"]);
+        if (!tmp.second) return false;
+        return con[tmp.first].query(trainname,std::cout,in["-d"]);
     }
-    ticketinfo query_ticket(const MYSTR<21> &trainID,const MYSTR<31> &s,const MYSTR<31> &t,const Date &d){
+    ticketinfo query_ticket(const UINT &trainID,const MYSTR<31> &s,const MYSTR<31> &t,const Date &d){
         train tr=con[trainID];
         UINT sid=tr.findstation(s),tid=tr.findstation(t);
         UINT dayid=tr.DayID(sid,d);

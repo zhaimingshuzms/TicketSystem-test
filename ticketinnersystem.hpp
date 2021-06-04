@@ -17,31 +17,31 @@
 #include "lib/fakebpt.hpp"
 typedef std::string STR;
 struct traininfo{
-    MYSTR<21> trainID;
+    UINT trainID;
     Date date_b,date_e;
     traininfo(){
     }
-    traininfo(const MYSTR<21> &s,const Date &d1,const Date &d2):trainID(s),date_b(d1),date_e(d2){
+    traininfo(const UINT &s,const Date &d1,const Date &d2):trainID(s),date_b(d1),date_e(d2){
     }
 };
 struct order{
     MYSTR<21> userID;
-    MYSTR<21> trainID;
+    UINT trainID;
     UINT dayID;
     UINT sid,tid;
     UINT num;
     UINT stat;//0 pending 1 success 2 refunded
     order(){
     }
-    order(const MYSTR<21> &s1,const MYSTR<21> &s2,UINT s3,UINT s4,UINT s5,UINT s6,UINT s7):userID(s1),trainID(s2),dayID(s3),sid(s4),tid(s5),num(s6),stat(s7){
+    order(const MYSTR<21> &s1,const UINT &s2,UINT s3,UINT s4,UINT s5,UINT s6,UINT s7):userID(s1),trainID(s2),dayID(s3),sid(s4),tid(s5),num(s6),stat(s7){
     }
 };
 struct exact_train{
-    MYSTR<21> trainID;
+    UINT trainID;
     UINT DayID;
     exact_train(){
     }
-    exact_train(const MYSTR<21> &s1,UINT s2):trainID(s1),DayID(s2){
+    exact_train(const UINT &s1,UINT s2):trainID(s1),DayID(s2){
     }
     bool operator <(const exact_train &tr) const{
         return trainID<tr.trainID||(trainID==tr.trainID&&DayID<tr.DayID);
@@ -51,12 +51,12 @@ struct exact_train{
     }
 };
 struct firsttraininfo{
-    MYSTR<21> trainID;
+    UINT trainID;
     OTime stime;
     OTime mtime;
     UINT price;
     UINT seat;
-    firsttraininfo(const MYSTR<21> &s1,const OTime &s2,const OTime &s3,const UINT &s4,const UINT &s5):trainID(s1),stime(s2),mtime(s3),price(s4),seat(s5){
+    firsttraininfo(const UINT &s1,const OTime &s2,const OTime &s3,const UINT &s4,const UINT &s5):trainID(s1),stime(s2),mtime(s3),price(s4),seat(s5){
     }
     firsttraininfo(){
     }
@@ -66,7 +66,7 @@ class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
     BPlusTree<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
-    BPlusTree<std::pair<MYSTR<31>,UINT>,MYSTR<21> > d;
+    BPlusTree<std::pair<MYSTR<31>,UINT>,UINT > d;
     BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
     BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
@@ -94,14 +94,15 @@ public:
     }
     bool release_train(const parse &in){
         ++trainnum;
-        if (!pts->list.count(in["-i"])&&pts->con.count(in["-i"])){
-            train t=pts->con[in["-i"]];
+        auto tmp=pts->trainname2.find(in["-i"]);
+        if (!pts->list.count(tmp.first)&&tmp.second){
+            train t=pts->con[tmp.first];
             for (UINT i=0; i<t.stationNum-1; ++i){
-                c.insert(std::make_pair(std::make_pair(t.stations[i],trainnum),traininfo(t.trainID,t.leavingtime(i,0).date,
+                c.insert(std::make_pair(std::make_pair(t.stations[i],trainnum),traininfo(t.trainind,t.leavingtime(i,0).date,
                                                                                          t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
-                d.insert(std::make_pair(std::make_pair(t.stations[i+1],trainnum),t.trainID));
+                d.insert(std::make_pair(std::make_pair(t.stations[i+1],trainnum),t.trainind));
             }
-            pts->list.insert(in["-i"],true);
+            pts->list.insert(tmp.first,true);
             return true;
         }
         return false;
@@ -121,12 +122,12 @@ public:
             }
         }
         mysort(vr,vr+vrsize,(in.count("-p")&&in["-p"]=="time")?[](ticketinfo &x,ticketinfo &y){
-            return (x.t2-x.t1<y.t2-y.t1)||(x.t2-x.t1==y.t2-y.t1&&x.trainID<y.trainID);//care
+            return (x.t2-x.t1<y.t2-y.t1)||(x.t2-x.t1==y.t2-y.t1&&trainname[x.trainID]<trainname[y.trainID]);//care
         }:[](ticketinfo &x,ticketinfo &y){
-            return x.price<y.price||(x.price==y.price&&x.trainID<y.trainID);//care
+            return x.price<y.price||(x.price==y.price&&trainname[x.trainID]<trainname[y.trainID]);//care
         });
         std::cout<<vrsize<<'\n';
-        for (UINT i=0; i<vrsize; ++i) std::cout<<vr[i].trainID<<" "<<in["-s"]<<" "<<vr[i].t1<<" "<<"->"<<" "<<in["-t"]<<" "<<vr[i].t2<<" "<<
+        for (UINT i=0; i<vrsize; ++i) std::cout<<trainname[vr[i].trainID]<<" "<<in["-s"]<<" "<<vr[i].t1<<" "<<"->"<<" "<<in["-t"]<<" "<<vr[i].t2<<" "<<
         vr[i].price<<" "<<vr[i].seat<<'\n';
         return true;
     }
@@ -143,11 +144,11 @@ public:
                     //auto p=mp.find(t.stations[i]);
                     if (!in.count("-p")||in["-p"]=="time"){
 //                        if (p==mp.end()||p->second.mtime>t.arrivetime(i,dayID))
-                          mp[t.stations[i]].push_back(firsttraininfo(t.trainID,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
+                          mp[t.stations[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
                     }
                     else{
 //                        if (p==mp.end()||p->second.price>t.price(sid,i))
-                          mp[t.stations[i]].push_back(firsttraininfo(t.trainID,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
+                          mp[t.stations[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
                     }
                 }
             }
@@ -163,14 +164,14 @@ public:
                 if (tmp == mp.end()) continue;
                 for (auto pp = tmp->second.begin(); pp != tmp->second.end(); ++pp) {
                     auto p=*pp;
-                    if (p.trainID == t.trainID) continue;
+                    if (p.trainID == t.trainind) continue;
                     UINT lim = t.saleDate_e - t.saleDate_b;
                     for (UINT j = 0; j <= lim; ++j)
                         if (OTime(t.leavingtime(i, j)) >= p.mtime) {
                             //if (in.count("-debug")) std::cerr<<"J"<<j<<" "<<t.price(i,tid)<<std::endl;
                             auto update = [&]() {
                                 ss.str("");
-                                ss << p.trainID << " ";
+                                ss << trainname[p.trainID] << " ";
                                 ss << in["-s"] << " ";
                                 ss << p.stime << " ";
                                 ss << "-> ";
@@ -178,7 +179,7 @@ public:
                                 ss << p.mtime << " ";
                                 ss << p.price << " ";
                                 ss << p.seat << "\n";
-                                ss << t.trainID << " ";
+                                ss << trainname[t.trainind] << " ";
                                 ss << t.stations[i] << " ";
                                 ss << t.leavingtime(i, j) << " ";
                                 ss << "-> ";
@@ -215,15 +216,16 @@ public:
     }
     bool buy_ticket(const parse &in){
         //if (in.count("-debug")) std::cerr<<in["-i"]<<std::endl;
-        if (!pts->list.count(in["-i"])) return false;
-        train t=pts->con[in["-i"]];
+        auto tmp=pts->trainname2[in["-i"]];
+        if (!pts->list.count(tmp)) return false;
+        train t=pts->con[tmp];
         UINT sid=t.findstation(in["-f"]),tid=t.findstation(in["-t"]);
         if (sid>=tid||sid==STATION_NUM||tid==STATION_NUM) return false;
         if (!t.inrange(sid,in["-d"])) return false;
         UINT DayID=t.DayID(sid,in["-d"]);
         UINT required=strtonum(in["-n"]);
         if (required>t.seatNum) return false;//6.2
-        order o(in["-u"],in["-i"],DayID,sid,tid,required,1);
+        order o(in["-u"],tmp,DayID,sid,tid,required,1);
         //if (in.count("-debug")) std::cerr<<t.seat(sid,tid,DayID)<<std::endl;
         if (satisfied(t,o)){
             t.buy(sid,tid,DayID,required);
@@ -235,7 +237,7 @@ public:
         if (!in.count("-q")||in["-q"]=="false") return false;
         o.stat=0;
         orderlist.insert(std::make_pair(std::make_pair(in["-u"],++ordernum),o));
-        pendingqueue.insert(std::make_pair(std::make_pair(exact_train(in["-i"],DayID),ordernum),o));
+        pendingqueue.insert(std::make_pair(std::make_pair(exact_train(tmp,DayID),ordernum),o));
         std::cout<<"queue"<<'\n';
         return true;
     }
@@ -277,7 +279,7 @@ public:
             auto &tmp=pr[i].second;
             std::cout << "[" << stat[tmp.stat] << "] ";
             train t=pts->con[tmp.trainID];
-            std::cout<<t.trainID<<" ";
+            std::cout<<trainname[t.trainind]<<" ";
             std::cout<<t.stations[tmp.sid]<<" ";
             std::cout<<t.leavingtime(tmp.sid,tmp.dayID)<<" ";
             std::cout<<"-> ";
