@@ -109,7 +109,6 @@ public:
     }
     bool query_ticket(const parse &in){
         //if (in.count("-debug")) std::cerr<<in["-s"]<<" "<<in["-t"]<<" "<<in["-d"]<<" "<<in["-p"]<<" "<<c.size()<<std::endl;
-        sjtu::vector<traininfo> vs;
         auto pr=c.range_find(std::make_pair(in["-s"],0),std::make_pair(in["-s"],trainnum));
 
         vrsize=0;

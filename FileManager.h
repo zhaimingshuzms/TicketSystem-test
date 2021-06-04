@@ -9,7 +9,6 @@
 #include <map>
 
 using namespace std;
-
 template<class T>
 class LRUCache {
 private:
@@ -44,7 +43,7 @@ private:
     }
 
 public:
-    LRUCache(fstream &_file, int _size = 1000) : size(_size), file(_file) {}
+    LRUCache(fstream &_file, int _size = 200) : size(_size), file(_file) {}
 
     ~LRUCache() {
         for (; head; head = tail) {
