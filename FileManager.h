@@ -6,7 +6,7 @@
 #define TICKETS_FILEMANAGER_H
 
 #include <fstream>
-#include <map>
+#include "HashMap.h"
 
 using namespace std;
 template<class T>
@@ -16,16 +16,16 @@ private:
         T value;
         long address;
         node *pre = nullptr, *nxt = nullptr;
-        map<long, node *> *the_map;
+        HashMap<long,node*> *the_map;
         bool is_modify = false;
 
-        node(const T &_value, long _address, map<long, node *> *_the_map) : value(_value), address(_address),
-                                                                            the_map(_the_map) {
+        node(const T &_value, long _address, HashMap<long, node *> *_the_map) : value(_value), address(_address),
+                                                                                the_map(_the_map) {
             the_map->insert(make_pair(_address, this));
         }
     } *head = nullptr, *tail = nullptr;
 
-    map<long, node *> table;
+    HashMap<long ,node*> table;
     int size;
     fstream &file;
 
@@ -43,7 +43,7 @@ private:
     }
 
 public:
-    LRUCache(fstream &_file, int _size = 200) : size(_size), file(_file) {}
+    explicit LRUCache(fstream &_file, int _size = 200) : size(_size), file(_file) {}
 
     ~LRUCache() {
         for (; head; head = tail) {
