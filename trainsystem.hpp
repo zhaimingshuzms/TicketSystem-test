@@ -48,15 +48,15 @@ UINT findticketmin(int trainind,int dayid,int lid,int rid){
         ret=std::min(ret,aval[i]);
     return ret;
 }
+OTime stopoverTimes[STATION_NUM];
+OTime travelTimes[STATION_NUM];
+UINT prices[STATION_NUM];
 class train{
 public:
     UINT stationNum;
     UINT seatNum;
     ULL stationhash[STATION_NUM];
-    UINT prices[STATION_NUM];
     OTime startOTime;
-    OTime travelTimes[STATION_NUM];
-    OTime stopoverTimes[STATION_NUM];
     Date saleDate_b,saleDate_e;
     CHA type;
     //my reserved area

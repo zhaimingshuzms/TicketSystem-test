@@ -97,7 +97,7 @@ public:
         ++trainnum;
         auto tmp=pts->trainname2.find(in["-i"]);
         if (!pts->list.count(tmp.first)&&tmp.second){
-            train t=pts->con[tmp.first];
+            train &&t=pts->con[tmp.first];
             for (UINT i=0; i<t.stationNum-1; ++i){
                 c.insert(std::make_pair(std::make_pair(t.stationhash[i],trainnum),traininfo(t.trainind,t.leavingtime(i,0).date,
                                                                                          t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
@@ -138,10 +138,10 @@ public:
         ULL ins=myhash(in["-s"]),intt=myhash(in["-t"]);
         //if (in.count("-debug")) std::cerr<<ins<<" "<<intt<<std::endl;
         auto pr=c.range_find(std::make_pair(ins,0),std::make_pair(ins,trainnum));
-        sjtu::map<ULL,sjtu::vector<firsttraininfo> > mp;
+        sjtu::map<ULL,sjtu::vector<firsttraininfo> > mp;// fast fast fast fast
         for (auto &i:pr)
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
-                train t=pts->con[i.second.trainID];
+                train &&t=pts->con[i.second.trainID];
                 UINT sid=t.findstation(ins),dayID=t.DayID(sid,in["-d"]);
                 for (UINT i=sid+1; i<t.stationNum; ++i){
                     //auto p=mp.find(t.stations[i]);
@@ -159,7 +159,7 @@ public:
         UINT minn=1e9,minn2=1e9;
         std::ostringstream ss;
         for (UINT i=0; i<pv.size(); ++i){
-            train t=pts->con[pv[i].second];
+            train &&t=pts->con[pv[i].second];
             //if (in.count("-debug")) std::cerr<<t.trainID<<std::endl;
             UINT tid=t.findstation(intt);
             for (UINT i=0; i<tid; ++i) {
@@ -221,7 +221,7 @@ public:
         //if (in.count("-debug")) std::cerr<<in["-i"]<<std::endl;
         auto tmp=pts->trainname2[in["-i"]];
         if (!pts->list.count(tmp)) return false;
-        train t=pts->con[tmp];
+        train &&t=pts->con[tmp];
         UINT sid=t.findstation(myhash(in["-f"])),tid=t.findstation(myhash(in["-t"]));
         if (sid>=tid||sid==STATION_NUM||tid==STATION_NUM) return false;
         if (!t.inrange(sid,in["-d"])) return false;
@@ -251,7 +251,7 @@ public:
         if (num>pr.size()) return false;
         order &o=pr[pr.size()-num].second;//dao le
         if (o.stat==2) return false;
-        train t=pts->con[o.trainID];
+        train &&t=pts->con[o.trainID];
         if (o.stat==0){
             pendingqueue.erase(std::make_pair(exact_train(o.trainID,o.dayID),pr[pr.size()-num].first.second));
             o.stat=2;
@@ -281,7 +281,7 @@ public:
          for (auto i=(int)(pr.size())-1; i>=0; --i) {
             auto &tmp=pr[i].second;
             std::cout << "[" << stat[tmp.stat] << "] ";
-            train t=pts->con[tmp.trainID];
+            train &&t=pts->con[tmp.trainID];
             std::cout<<trainname[t.trainind]<<" ";
             std::cout<<stations[t.stationhash[tmp.sid]]<<" ";
             std::cout<<t.leavingtime(tmp.sid,tmp.dayID)<<" ";

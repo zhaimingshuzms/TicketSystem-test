@@ -63,7 +63,9 @@ public:
         //need to be done
     }
     void query_profile(const parse &in){
+        //int t=clock();
         if (!us.query_profile(in)) std::cout<<-1<<'\n';
+        //sum+=clock()-t;
         //need to be done
     }
     void modify_profile(const parse &in){
@@ -98,13 +100,17 @@ public:
         //need to be done
     }
     void query_transfer(const parse &in){
+        //int t=clock();
         tis.query_transfer(in);
+        //sum+=clock()-t;
         //need to be done
     }
     void buy_ticket(const parse &in){
         //need to be done
+        //int t=clock();
         if (us.already_login(in["-u"])&&tis.buy_ticket(in));
         else std::cout<<-1<<'\n';
+        //sum+=clock()-t;
     }
     void query_order(const parse &in){
         if (us.already_login(in["-u"])&&tis.query_order(in));
