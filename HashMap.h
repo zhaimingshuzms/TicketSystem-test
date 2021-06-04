@@ -69,7 +69,7 @@ private:
     int get_hash_value(const Key &_key) { return h(_key) % dividend; }
 
 public:
-    explicit HashMap(int _dividend = 7) : dividend(_dividend) { hash_value = new list[dividend]; }
+    explicit HashMap(int _dividend = 997) : dividend(_dividend) { hash_value = new list[dividend]; }
 
     ~HashMap() { delete[] hash_value; }
 
