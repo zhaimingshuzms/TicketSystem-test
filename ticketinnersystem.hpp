@@ -68,7 +68,7 @@ class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
     BPlusTree<std::pair<ULL,UINT>,traininfo> c;//multimap hai mei gai
-    BPlusTree<std::pair<ULL,UINT>,UINT > d;
+    BPlusTree<std::pair<ULL,UINT>,UINT> d;
     BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
     BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
@@ -97,14 +97,15 @@ public:
     bool release_train(const parse &in){
         ++trainnum;
         auto tmp=pts->trainname2.find(in["-i"]);
-        if (!pts->list.count(tmp.first)&&tmp.second){
+        if (!pts->con[tmp.first].released&&tmp.second){
             train &&t=pts->con[tmp.first];
             for (UINT i=0; i<t.stationNum-1; ++i){
                 c.insert(std::make_pair(std::make_pair(t.stationhash[i],trainnum),traininfo(t.trainind,t.leavingtime(i,0).date,
                                                                                          t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
                 d.insert(std::make_pair(std::make_pair(t.stationhash[i+1],trainnum),t.trainind));
             }
-            pts->list.insert(tmp.first,true);
+            t.released=true;
+            pts->con.update(tmp.first,t);
             return true;
         }
         return false;
@@ -221,8 +222,8 @@ public:
     bool buy_ticket(const parse &in){
         //if (in.count("-debug")) std::cerr<<in["-i"]<<std::endl;
         auto tmp=pts->trainname2[in["-i"]];
-        if (!pts->list.count(tmp)) return false;
         train &&t=pts->con[tmp];
+        if (!t.released) return false;
         UINT sid=t.findstation(myhash(in["-f"])),tid=t.findstation(myhash(in["-t"]));
         if (sid>=tid||sid==STATION_NUM||tid==STATION_NUM) return false;
         if (!t.inrange(sid,in["-d"])) return false;

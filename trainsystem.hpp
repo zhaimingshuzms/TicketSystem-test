@@ -67,6 +67,7 @@ public:
     OTime leavingTimes[STATION_NUM];
     UINT priceprefix[STATION_NUM];
     Time startTime;
+    bool released;
     train(){
     }
     train(const UINT &s2,const UINT &s3,const STR &s4,
@@ -107,6 +108,7 @@ public:
         for (UINT i=1; i<stationNum; ++i) priceprefix[i]=priceprefix[i-1]+prices[i];
         startTime=startOTime;
         startTime.date=saleDate_b;
+        released=false;
         //std::cout<<startTime<<" "<<saleDate_b<<" "<<saleDate_e<<" "<<saleDate_e-saleDate_e<<std::endl;
     }
     bool query(BPlusTree<UINT,MYSTR<21> > &trainname,std::ostream &os,const Date &d){
@@ -173,12 +175,12 @@ static BPlusTree<UINT,MYSTR<21> > trainname("trainname.bin");
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
-    BPlusTree<UINT,bool> list;//modified
+    //BPlusTree<UINT,bool> list;//modified
     BPlusTree<UINT,train,50> con;//ji de 10
-    FakeBpt<MYSTR<21>,UINT> trainname2;
+    BPlusTree<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:
-    trainsystem():list("releasetrain.bin"),con("train.bin"),trainname2("trainname2.bin"){
+    trainsystem():con("train.bin"),trainname2("trainname2.bin"){
         p.open("ticket.bin",std::ios_base::out|std::ios_base::in|std::ios_base::binary);
         if (!p) p.open("ticket.bin",std::ios_base::out|std::ios_base::binary);
         p.close();
@@ -212,7 +214,7 @@ public:
     bool delete_train(const parse &in){
         auto tmp=trainname2.find(in["-i"]);
         if (!tmp.second) return false;
-        if (list.count(tmp.first)) return false;
+        if (con[tmp.first].released) return false;
         con.erase(tmp.first);
         trainname.erase(tmp.first);
         trainname2.erase(in["-i"]);

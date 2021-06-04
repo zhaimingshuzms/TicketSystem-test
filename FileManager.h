@@ -43,7 +43,7 @@ private:
     }
 
 public:
-    explicit LRUCache(fstream &_file, int _size = 200) : size(_size), file(_file) {}
+    explicit LRUCache(fstream &_file, int _size = 150) : size(_size), file(_file) {}
 
     ~LRUCache() {
         for (; head; head = tail) {
