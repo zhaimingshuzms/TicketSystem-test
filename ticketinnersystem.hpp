@@ -21,9 +21,10 @@ typedef unsigned long long ULL;
 struct traininfo{
     UINT trainID;
     Date date_b,date_e;
+    UINT sid;
     traininfo(){
     }
-    traininfo(const UINT &s,const Date &d1,const Date &d2):trainID(s),date_b(d1),date_e(d2){
+    traininfo(const UINT &s,const Date &d1,const Date &d2,const UINT &u):trainID(s),date_b(d1),date_e(d2),sid(u){
     }
 };
 struct order{
@@ -67,10 +68,10 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    BPlusTree<std::pair<ULL,UINT>,traininfo,200,10000> c;//multimap hai mei gai
-    BPlusTree<std::pair<ULL,UINT>,UINT,200,10000> d;
-    BPlusTree<std::pair<MYSTR<21>,UINT>,order,200,10000> orderlist;
-    BPlusTree<std::pair<exact_train,UINT>,order,200,10000> pendingqueue;
+    BPlusTree<std::pair<ULL,UINT>,traininfo,200,1000> c;//multimap hai mei gai
+    BPlusTree<std::pair<ULL,UINT>,UINT,200,1000> d;
+    BPlusTree<std::pair<MYSTR<21>,UINT>,order,200,1000> orderlist;
+    BPlusTree<std::pair<exact_train,UINT>,order,200,1000> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
     UINT trainnum;
@@ -101,7 +102,7 @@ public:
             train &&t=pts->con[tmp.first];
             for (UINT i=0; i<t.stationNum-1; ++i){
                 c.insert(std::make_pair(std::make_pair(t.stationhash[i],trainnum),traininfo(t.trainind,t.leavingtime(i,0).date,
-                                                                                         t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
+                                                                                         t.leavingtime(i,t.saleDate_e-t.saleDate_b).date,i)));
                 d.insert(std::make_pair(std::make_pair(t.stationhash[i+1],trainnum),t.trainind));
             }
             t.released=true;
@@ -120,8 +121,8 @@ public:
             //if (in.count("-debug")&&i.trainID==MYSTR<20>("imperiouswaves")) std::cerr<<i.trainID<<" "<<i.date_b<<" "<<i.date_e<<std::endl;
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {//maybeslow
                 UINT tmp=pts->con[i.second.trainID].findstation(intt);
-                if (tmp==STATION_NUM||tmp<pts->con[i.second.trainID].findstation(ins)) continue;
-                vr[vrsize++] = pts->query_ticket(i.second.trainID, ins, intt, in["-d"]);
+                if (tmp==STATION_NUM||tmp<i.second.sid) continue;
+                vr[vrsize++] = pts->query_ticket(i.second.trainID, i.second.sid, tmp, in["-d"]);
             }
         }
         mysort(vr,vr+vrsize,(in.count("-p")&&in["-p"]=="time")?[](ticketinfo &x,ticketinfo &y){

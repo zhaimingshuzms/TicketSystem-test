@@ -176,8 +176,8 @@ class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
     //BPlusTree<UINT,bool> list;//modified
-    BPlusTree<UINT,train,50,150> con;//ji de 10
-    BPlusTree<MYSTR<21>,UINT,200,200> trainname2;
+    BPlusTree<UINT,train,70,150> con;//ji de 10
+    BPlusTree<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:
     trainsystem():con("train.bin"),trainname2("trainname2.bin"){
@@ -226,9 +226,9 @@ public:
         if (!tmp.second) return false;
         return con[tmp.first].query(trainname,std::cout,in["-d"]);
     }
-    ticketinfo query_ticket(const UINT &trainID,const ULL &s,const ULL &t,const Date &d){
+    ticketinfo query_ticket(const UINT &trainID,const UINT &sid,const UINT &tid,const Date &d){
         train tr=con[trainID];
-        UINT sid=tr.findstation(s),tid=tr.findstation(t);
+        //UINT sid=tr.findstation(s),tid=tr.findstation(t);
         UINT dayid=tr.DayID(sid,d);
         ticketinfo ret;
         ret.trainID=trainID;
