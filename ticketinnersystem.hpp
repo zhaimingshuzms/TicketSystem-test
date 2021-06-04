@@ -15,6 +15,7 @@
 #include "BPlusTree.h"
 #include <map>
 #include "lib/fakebpt.hpp"
+#include <unordered_map>
 typedef std::string STR;
 typedef unsigned long long ULL;
 struct traininfo{
@@ -138,7 +139,7 @@ public:
         ULL ins=myhash(in["-s"]),intt=myhash(in["-t"]);
         //if (in.count("-debug")) std::cerr<<ins<<" "<<intt<<std::endl;
         auto pr=c.range_find(std::make_pair(ins,0),std::make_pair(ins,trainnum));
-        sjtu::map<ULL,sjtu::vector<firsttraininfo> > mp;// fast fast fast fast
+        std::unordered_map<ULL,sjtu::vector<firsttraininfo> > mp;// fast fast fast fast
         for (auto &i:pr)
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
                 train &&t=pts->con[i.second.trainID];

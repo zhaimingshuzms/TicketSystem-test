@@ -109,7 +109,7 @@ public:
         startTime.date=saleDate_b;
         //std::cout<<startTime<<" "<<saleDate_b<<" "<<saleDate_e<<" "<<saleDate_e-saleDate_e<<std::endl;
     }
-    bool query(FakeBpt<UINT,MYSTR<21> > &trainname,std::ostream &os,const Date &d){
+    bool query(BPlusTree<UINT,MYSTR<21> > &trainname,std::ostream &os,const Date &d){
         if (d<saleDate_b||saleDate_e<d) return false;
         os<<trainname[trainind]<<" "<<type<<'\n';
         Time st=startTime;
@@ -169,7 +169,7 @@ struct ticketinfo{
     OTime t1,t2;
     UINT seat,price;
 };
-static FakeBpt<UINT,MYSTR<21> > trainname("trainname.bin");
+static BPlusTree<UINT,MYSTR<21> > trainname("trainname.bin");
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
