@@ -5,11 +5,13 @@
 #include <cstring>
 #include <vector>
 #include "FileManager.h"
+#include "lib/mystring.hpp"
 
 using namespace std;
 
 template<class Key, class Data, const int M = 200>
-struct BPlusTree {
+class BPlusTree {
+private:
     struct node {
         long son_address[M + 5] = {0};
         Data data_value[M + 5];
@@ -43,9 +45,10 @@ struct BPlusTree {
     long root = -1;
     int depth = 0, leaf_size = 0;
     FileManager<node> *file;
+    MYSTR<20> s;
 
     //to insert a Key into a no_leaf node
-    void assist_insert(const Key &key, int dep, node *the_node, int *the_sub, long *node_pos, long former_pos) {
+    void assist_insert(const Key &key, int dep, node **the_node, int *the_sub, long *node_pos, long former_pos) {
         if (dep == -1) {//form a new root
             depth++;
             node n;
@@ -57,7 +60,7 @@ struct BPlusTree {
             file->save(n);
             return;
         }
-        node *n = &the_node[dep];
+        node *n = the_node[dep];
         int j = the_sub[dep];
         if (n->size < M - 1) {
             for (int i = n->size; i > j; i--) n->index[i] = n->index[i - 1], n->son_address[i + 1] = n->son_address[i];
@@ -86,8 +89,8 @@ struct BPlusTree {
         assist_insert(tmp_key[n->size], dep - 1, the_node, the_sub, node_pos, new_pos);
     }
 
-    void assist_erase(int dep, node *the_node, int *the_sub, long *node_pos) {
-        node *n = &the_node[dep];
+    void assist_erase(int dep, node **the_node, int *the_sub, long *node_pos) {
+        node *n = the_node[dep];
         int j = the_sub[dep];
         n->size--;
         for (int i = j; i < n->size; i++) n->index[i] = n->index[i + 1], n->son_address[i + 1] = n->son_address[i + 2];
@@ -100,26 +103,26 @@ struct BPlusTree {
             file->save(*n, node_pos[dep]);
             return;
         }
-        if (the_sub[dep - 1] == the_node[dep - 1].size) {//get the former node
+        if (the_sub[dep - 1] == the_node[dep - 1]->size) {//get the former node
             the_sub[dep + 1] = the_sub[dep - 1];
-            the_sub[dep - 1] = the_node[dep - 1].size - 1;
+            the_sub[dep - 1] = the_node[dep - 1]->size - 1;
             node_pos[dep + 1] = node_pos[dep];
-            node_pos[dep] = the_node[dep - 1].son_address[the_sub[dep - 1]];
+            node_pos[dep] = the_node[dep - 1]->son_address[the_sub[dep - 1]];
             the_node[dep + 1] = the_node[dep];
             the_node[dep] = file->read(node_pos[dep]);
-            n = &the_node[dep];
+            n = the_node[dep];
         } else {
             the_sub[dep + 1] = the_sub[dep - 1] + 1;
-            node_pos[dep + 1] = the_node[dep - 1].son_address[the_sub[dep + 1]];
+            node_pos[dep + 1] = the_node[dep - 1]->son_address[the_sub[dep + 1]];
             the_node[dep + 1] = file->read(node_pos[dep + 1]);
         }
-        node *n1 = &the_node[dep + 1];
+        node *n1 = the_node[dep + 1];
         if (n->size + n1->size >= M - 1) {//do a fake split
-            Key tmp_key[n->size + n1->size+3];
-            long tmp_address[n->size + n1->size+3];
+            Key tmp_key[n->size + n1->size + 3];
+            long tmp_address[n->size + n1->size + 3];
             for (int i = 0; i < n->size; i++) tmp_address[i] = n->son_address[i], tmp_key[i] = n->index[i];
             tmp_address[n->size] = n->son_address[n->size];
-            tmp_key[n->size] = the_node[dep - 1].index[the_sub[dep - 1]];
+            tmp_key[n->size] = the_node[dep - 1]->index[the_sub[dep - 1]];
             for (int i = n->size + 1; i < n->size + n1->size + 1; i++)
                 tmp_address[i] = n1->son_address[i - 1 - n->size], tmp_key[i] = n1->index[i - 1 - n->size];
             tmp_address[n->size + n1->size + 1] = n1->son_address[n1->size];
@@ -130,15 +133,15 @@ struct BPlusTree {
             for (int i = 0; i < n1->size; i++)
                 n1->son_address[i] = tmp_address[i + 1 + n->size], n1->index[i] = tmp_key[i + 1 + n->size];
             n1->son_address[n1->size] = tmp_address[n->size + n1->size + 1];
-            the_node[dep - 1].index[the_sub[dep - 1]] = tmp_key[n->size];
+            the_node[dep - 1]->index[the_sub[dep - 1]] = tmp_key[n->size];
             file->save(*n, node_pos[dep]);
             file->save(*n1, node_pos[dep + 1]);
-            file->save(the_node[dep - 1], node_pos[dep - 1]);
+            file->save(*the_node[dep - 1], node_pos[dep - 1]);
             return;
 
         }
         //merge again
-        n->index[n->size] = the_node[dep - 1].index[the_sub[dep - 1]];
+        n->index[n->size] = the_node[dep - 1]->index[the_sub[dep - 1]];
         for (int i = 0; i < n1->size; i++)
             n->son_address[i + 1 + n->size] = n1->son_address[i], n->index[i + 1 + n->size] = n1->index[i];
         n->size += n1->size + 1;
@@ -149,8 +152,9 @@ struct BPlusTree {
 
 public:
     explicit BPlusTree(const string &file_name) {
+        s=file_name;
         fstream f;
-        f.open("BPlusTree.bin",ios_base::in|ios_base::out|ios_base::binary);
+        f.open(string(s)+"t",ios_base::in|ios_base::out|ios_base::binary);//tong yi ge wen jian
         if (!f) root=-1,depth=0,leaf_size=0;
         else f.read(reinterpret_cast<char *>(this),sizeof(*this));
         f.close();
@@ -159,7 +163,7 @@ public:
 
     ~BPlusTree() {
         fstream f;
-        f.open("BPlusTree.bin",ios_base::out|ios_base::binary);
+        f.open(string(s)+"t",ios_base::out|ios_base::binary);
         f.write(reinterpret_cast<const char *>(this),sizeof(*this));
         f.close();
         delete file;
@@ -177,22 +181,22 @@ public:
             depth = 1;
             return true;
         }
-        node passed_node[depth + 2];
+        node *passed_node[depth + 2];
         long passed_pos[depth + 2] = {0};
         int passed_sub[depth + 2];//store information of the path
         passed_pos[0] = root;
         int j;
         for (int i = 0; i < depth; i++) {
             passed_node[i] = file->read(passed_pos[i]);
-            for (j = 0; j < passed_node[i].size; j++) if (passed_node[i].index[j] >= key) break;
+            for (j = 0; j < passed_node[i]->size; j++) if (passed_node[i]->index[j] >= key) break;
             if (i == depth - 1) break;
-            if (j == passed_node[i].size || passed_node[i].index[j] > key)
-                passed_pos[i + 1] = passed_node[i].son_address[j];
-            else passed_pos[i + 1] = passed_node[i].son_address[++j];
+            if (j == passed_node[i]->size || passed_node[i]->index[j] > key)
+                passed_pos[i + 1] = passed_node[i]->son_address[j];
+            else passed_pos[i + 1] = passed_node[i]->son_address[++j];
             passed_sub[i] = j;
         }
-        if (j < passed_node[depth - 1].size && passed_node[depth - 1].index[j] == key) { return false; }
-        node *n = &passed_node[depth - 1];
+        if (j < passed_node[depth - 1]->size && passed_node[depth - 1]->index[j] == key) { return false; }
+        node *n = passed_node[depth - 1];
         if (n->size < M - 1) {
             for (int i = n->size; i > j; i--) n->index[i] = n->index[i - 1], n->data_value[i] = n->data_value[i - 1];
             n->index[j] = key;
@@ -224,27 +228,27 @@ public:
 
     bool erase(const Key &key) {
         if (!leaf_size) return false;
-        node passed_node[depth + 2];
+        node *passed_node[depth + 2];
         long passed_pos[depth + 2] = {0};
         int passed_sub[depth + 2];//store information of the path
         passed_pos[0] = root;
         int j;
         for (int i = 0; i < depth; i++) {
             passed_node[i] = file->read(passed_pos[i]);
-            for (j = 0; j < passed_node[i].size; j++) if (passed_node[i].index[j] >= key) break;
+            for (j = 0; j < passed_node[i]->size; j++) if (passed_node[i]->index[j] >= key) break;
             if (i == depth - 1) break;
-            if (j == passed_node[i].size || passed_node[i].index[j] > key)
-                passed_pos[i + 1] = passed_node[i].son_address[j];
-            else passed_pos[i + 1] = passed_node[i].son_address[++j];
+            if (j == passed_node[i]->size || passed_node[i]->index[j] > key)
+                passed_pos[i + 1] = passed_node[i]->son_address[j];
+            else passed_pos[i + 1] = passed_node[i]->son_address[++j];
             passed_sub[i] = j;
         }
-        if (j == passed_node[depth - 1].size || passed_node[depth - 1].index[j] > key) { return false; }
-        node *n = &passed_node[depth - 1];
+        if (j == passed_node[depth - 1]->size || passed_node[depth - 1]->index[j] > key) { return false; }
+        node *n = passed_node[depth - 1];
         if (!j) //the erasing key may exist in no_leaf node
             for (int i = depth - 2; i >= 0; i--)
-                if (passed_sub[i] && passed_node[i].index[passed_sub[i] - 1] == n->index[0]) {
-                    passed_node[i].index[passed_sub[i] - 1] = n->index[1];
-                    file->save(passed_node[i], passed_pos[i]);
+                if (passed_sub[i] && passed_node[i]->index[passed_sub[i] - 1] == n->index[0]) {
+                    passed_node[i]->index[passed_sub[i] - 1] = n->index[1];
+                    file->save(*passed_node[i], passed_pos[i]);
                     break;
                 }
         n->size--, leaf_size--;
@@ -259,23 +263,23 @@ public:
             return true;
         }
         //use passed_node[depth] to present the bro node
-        if (passed_sub[depth - 2] == passed_node[depth - 2].size) {//get the former node
+        if (passed_sub[depth - 2] == passed_node[depth - 2]->size) {//get the former node
             passed_sub[depth] = passed_sub[depth - 2];
-            passed_sub[depth - 2] = passed_node[depth - 2].size - 1;
+            passed_sub[depth - 2] = passed_node[depth - 2]->size - 1;
             passed_pos[depth] = passed_pos[depth - 1];
-            passed_pos[depth - 1] = passed_node[depth - 2].son_address[passed_sub[depth - 2]];
+            passed_pos[depth - 1] = passed_node[depth - 2]->son_address[passed_sub[depth - 2]];
             passed_node[depth] = passed_node[depth - 1];
             passed_node[depth - 1] = file->read(passed_pos[depth - 1]);
-            n = &passed_node[depth - 1];
+            n = passed_node[depth - 1];
         } else {
             passed_sub[depth] = passed_sub[depth - 2] + 1;
-            passed_pos[depth] = passed_node[depth - 2].son_address[passed_sub[depth]];
+            passed_pos[depth] = passed_node[depth - 2]->son_address[passed_sub[depth]];
             passed_node[depth] = file->read(passed_pos[depth]);
         }
-        node *n1 = &passed_node[depth];
+        node *n1 = passed_node[depth];
         if (n->size + n1->size >= M) {//do a fake split
-            Key tmp_key[n->size + n1->size+2];
-            Data tmp_data[n->size + n1->size+2];
+            Key tmp_key[n->size + n1->size + 2];
+            Data tmp_data[n->size + n1->size + 2];
             for (int i = 0; i < n->size; i++) tmp_data[i] = n->data_value[i], tmp_key[i] = n->index[i];
             for (int i = n->size; i < n->size + n1->size; i++)
                 tmp_data[i] = n1->data_value[i - n->size], tmp_key[i] = n1->index[i - n->size];
@@ -289,9 +293,9 @@ public:
             file->save(*n1, passed_pos[depth]);
             //renew the no_leaf node
             for (int i = depth - 2; i >= 0; i--)
-                if (passed_node[i].index[passed_sub[i]] == old) {
-                    passed_node[i].index[passed_sub[i]] = n1->index[0];
-                    file->save(passed_node[i], passed_pos[i]);
+                if (passed_node[i]->index[passed_sub[i]] == old) {
+                    passed_node[i]->index[passed_sub[i]] = n1->index[0];
+                    file->save(*passed_node[i], passed_pos[i]);
                     break;
                 }
             return true;
@@ -311,21 +315,17 @@ public:
         if (!leaf_size) return make_pair(data, false);
         long pos = root;
         node *n;
-        n = new node;
-        for (int i = 0; i < depth; i++){
-            *n = file->read(pos);
+        for (int i = 0; i < depth; i++) {
+            n = file->read(pos);
             int j;
             for (j = 0; j < n->size; j++) if (n->index[j] >= key) break;
             if (i == depth - 1) {
                 if (j == n->size || n->index[j] > key) {
-                    delete n;
                     return make_pair(data, false);
                 }
-                auto &&t=make_pair(n->data_value[j], true);//modified
-                delete n;
-                return t;
+                return make_pair(n->data_value[j], true);
             }
-            if (j == n->size || n->index[j] > key) pos = n->son_address[j];//???
+            if (j == n->size || n->index[j] > key) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
         }
     }
@@ -337,23 +337,23 @@ public:
         node *n;
         int j;
         for (int i = 0; i < depth; i++) {
-            n = new node(file->read(pos));
+            n = file->read(pos);
             for (j = 0; j < n->size; j++) if (n->index[j] >= key1) break;
             if (i == depth - 1) break;
             if (j == n->size || n->index[j] > key1) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
         }
-        if (j == n->size || n->index[j] > key1) {
-            delete n;
-            return vec;
-        }
-        while (n->index[j] != key2) {
+        if (j == n->size) return vec;
+        while (n->index[j] <= key2) {
+            //std::cerr<<(n->index[j])<<" "<<n->nxt<<std::endl;
             vec.push_back(make_pair(n->index[j], n->data_value[j]));
-            if (j == n->size) j = 0, *n = file->read(n->nxt);
+            if (j == n->size - 1){
+                if (n->nxt==-1) break;
+                j = 0, n = file->read(n->nxt);
+            }
             else j++;
         }
-        vec.push_back(make_pair(n->index[j], n->data_value[j]));
-        delete n;
+        //vec.push_back(make_pair(n->index[j], n->data_value[j]));
         return vec;
     }
 
@@ -366,9 +366,8 @@ public:
         if (!leaf_size) return;
         long pos = root;
         node *n;
-        n = new node;
         for (int i = 0; i < depth; i++) {
-            *n = file->read(pos);
+            n = file->read(pos);
             int j;
             for (j = 0; j < n->size; j++) if (n->index[j] >= key) break;
             if (i == depth - 1 && j != n->size && n->index[j] <= key) {
@@ -378,14 +377,10 @@ public:
             if (j == n->size || n->index[j] > key) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
         }
-        delete n;
     }
 
     //overload function
-    bool insert(const pair<Key, Data> &_pair) {
-        //std::cerr<<"_pair"<<std::endl;
-        return insert(_pair.first, _pair.second);
-    }
+    bool insert(const pair<Key, Data> &_pair) { return insert(_pair.first, _pair.second); }
 
     bool erase(const pair<Key, Data> &_pair) { return erase(_pair.first); }
 
@@ -395,12 +390,8 @@ public:
 
     Data operator[](const Key &key) { return _find(key).first; }
 
-    pair<Data, bool> find(const Key &key) {
-        return _find(key);
-    }
-    bool
-    count(const Key &key) {
-        //std::cerr<<"count"<<std::endl;
+    pair<Data, bool> find(const Key &key) { return _find(key); }
+    bool count(const Key &key){
         return _find(key).second;
     }
 };

@@ -65,10 +65,10 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    FakeBpt<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
-    FakeBpt<std::pair<MYSTR<31>,UINT>,MYSTR<21> > d;
-    FakeBpt<std::pair<MYSTR<21>,UINT>,order> orderlist;
-    FakeBpt<std::pair<exact_train,UINT>,order> pendingqueue;
+    BPlusTree<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
+    BPlusTree<std::pair<MYSTR<31>,UINT>,MYSTR<21> > d;
+    BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
+    BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
     UINT trainnum;
@@ -110,26 +110,16 @@ public:
         //if (in.count("-debug")) std::cerr<<in["-s"]<<" "<<in["-t"]<<" "<<in["-d"]<<" "<<in["-p"]<<" "<<c.size()<<std::endl;
         sjtu::vector<traininfo> vs;
         auto pr=c.range_find(std::make_pair(in["-s"],0),std::make_pair(in["-s"],trainnum));
-        if (pr.size())
-            for (auto i=0; i<pr.size(); ++i) {
-              //  if (in.count("-debug")&&pr[i].second.trainID==MYSTR<20>("imperiouswaves")) std::cerr<<"succeed"<<std::endl;
-                vs.push_back(pr[i].second);
-            }
 
         vrsize=0;
-        for (auto i:vs) {
+        for (auto &i:pr) {
             //if (in.count("-debug")&&i.trainID==MYSTR<20>("imperiouswaves")) std::cerr<<i.trainID<<" "<<i.date_b<<" "<<i.date_e<<std::endl;
-            if (i.date_b <= in["-d"] && Date(in["-d"]) <= i.date_e) {//maybeslow
-                UINT tmp=pts->con[i.trainID].findstation(in["-t"]);
-                if (tmp==STATION_NUM||tmp<pts->con[i.trainID].findstation(in["-s"])) continue;
-                vr[vrsize++] = pts->query_ticket(i.trainID, in["-s"], in["-t"], in["-d"]);
+            if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {//maybeslow
+                UINT tmp=pts->con[i.second.trainID].findstation(in["-t"]);
+                if (tmp==STATION_NUM||tmp<pts->con[i.second.trainID].findstation(in["-s"])) continue;
+                vr[vrsize++] = pts->query_ticket(i.second.trainID, in["-s"], in["-t"], in["-d"]);
             }
         }
-        //use std sort
-        /*if (in.count("-debug")){
-            for (int i=0; i<vrsize; ++i)
-                std::cerr<<vr[i].t2-vr[i].t1<<" "<<vr[i].trainID<<std::endl;
-        }*/
         mysort(vr,vr+vrsize,(in.count("-p")&&in["-p"]=="time")?[](ticketinfo &x,ticketinfo &y){
             return (x.t2-x.t1<y.t2-y.t1)||(x.t2-x.t1==y.t2-y.t1&&x.trainID<y.trainID);//care
         }:[](ticketinfo &x,ticketinfo &y){
@@ -143,15 +133,11 @@ public:
     bool query_transfer(const parse &in){//neng bu neng hai shi tong yi liang che
         //an suo xu shi jian pai
         //std::cerr<<"query_transfer"<<in["-s"]<<" "<<in["-t"]<<std::endl;
-        sjtu::vector<traininfo> vs;
         auto pr=c.range_find(std::make_pair(in["-s"],0),std::make_pair(in["-s"],trainnum));
-        if (pr.size())
-            for (auto i=0; i<pr.size(); ++i)
-                vs.push_back(pr[i].second);
         sjtu::map<MYSTR<31>,sjtu::vector<firsttraininfo> > mp;
-        for (auto i:vs)
-            if (i.date_b <= in["-d"] && Date(in["-d"]) <= i.date_e) {
-                train t=pts->con[i.trainID];
+        for (auto &i:pr)
+            if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
+                train t=pts->con[i.second.trainID];
                 UINT sid=t.findstation(in["-s"]),dayID=t.DayID(sid,in["-d"]);
                 for (UINT i=sid+1; i<t.stationNum; ++i){
                     //auto p=mp.find(t.stations[i]);

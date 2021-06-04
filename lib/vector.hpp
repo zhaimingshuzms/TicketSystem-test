@@ -231,7 +231,7 @@ public:
 	 */
 	vector() {
 	    _size=0;
-	    _cap=2000;
+	    _cap=4;
 	    head=alloc.allocate(_cap);
 	}
 	vector(const vector &other) {

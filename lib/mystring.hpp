@@ -27,6 +27,9 @@ public:
         top=0;
         for (UINT i=0; s[i]; ++i) ch[top++]=s[i];
     }
+    operator std::string(){
+        return std::string(ch);
+    }
     char & operator [](const UINT &pos){
         //if (pos>=N) throw;
         return ch[pos];
