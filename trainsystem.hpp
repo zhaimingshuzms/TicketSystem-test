@@ -15,14 +15,17 @@
 #include <map>
 typedef std::string STR;
 typedef unsigned char CHA;
+typedef unsigned long long ULL;
 const int DAY_NUM=92;
 const int STATION_NUM=100;
 std::fstream p;
+UINT aval[STATION_NUM];
+static BPlusTree<ULL,MYSTR<31> >stations("stations.bin");
 void saveticket(int trainind,int dayid,int lid,int rid,UINT val){
     int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+lid;
     p.seekp(offset*sizeof(UINT),ios_base::beg);
-    for (UINT i=lid; i<=rid; ++i)
-    p.write(reinterpret_cast<const char *>(&val),sizeof(val));
+    for (UINT i=0; i<=rid-lid; ++i) aval[i]=val;
+    p.write(reinterpret_cast<const char *>(&aval),sizeof(*aval)*(rid-lid+1));
 }
 void saveticket(int trainind,int dayid,int id,UINT val){
     int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+id;
@@ -36,11 +39,20 @@ UINT findticket(int trainind,int dayid,int id){
     p.read(reinterpret_cast<char *>(&val),sizeof(val));
     return val;
 }
+UINT findticketmin(int trainind,int dayid,int lid,int rid){
+    int offset=trainind*DAY_NUM*STATION_NUM+dayid*STATION_NUM+lid;
+    p.seekg(offset*sizeof(UINT),ios::beg);
+    p.read(reinterpret_cast<char *>(&aval), sizeof(*aval)*(rid-lid+1));
+    UINT ret=1e9;
+    for (UINT i=0; i<=rid-lid; ++i)
+        ret=std::min(ret,aval[i]);
+    return ret;
+}
 class train{
 public:
     UINT stationNum;
     UINT seatNum;
-    MYSTR<31> stations[STATION_NUM];
+    ULL stationhash[STATION_NUM];
     UINT prices[STATION_NUM];
     OTime startOTime;
     OTime travelTimes[STATION_NUM];
@@ -62,7 +74,11 @@ public:
         stationNum=s2;
         seatNum=s3;
         sjtu::vector<STR> v=divide(s4,'|');
-        for (UINT i=0; i<stationNum; ++i) stations[i]=v[i];
+        //for (UINT i=0; i<stationNum; ++i) stations[i]=v[i];
+        for (UINT i=0; i<stationNum; ++i) {
+            stationhash[i] = myhash(v[i]);
+            if (!stations.count(stationhash[i])) stations.insert(stationhash[i],v[i]);
+        }
         v=divide(s5,'|');
         for (UINT i=1; i<stationNum; ++i) prices[i]=strtonum(v[i-1]);
         v=divide(s6,':');
@@ -99,7 +115,7 @@ public:
         Time st=startTime;
         st.date=d;
         for (UINT i=0; i<stationNum; ++i) {
-            os << stations[i]<<" ";
+            os << stations[stationhash[i]]<<" ";
             if (i == 0) os << "xx-xx xx:xx "; else os << st + arrivalTimes[i] << " ";
             os << "-> ";
             if (i < stationNum - 1) os << st + leavingTimes[i] <<" "; else os << "xx-xx xx:xx ";
@@ -109,19 +125,21 @@ public:
         }
         return true;
     }
-    UINT findstation(const MYSTR<31> &s){
+    /*UINT findstation(const MYSTR<31> &s){
         for (UINT i=0; i<stationNum; ++i)
             if (stations[i]==s) return i;
+        return STATION_NUM;
+    }*/
+    UINT findstation(const ULL &s){
+        for (UINT i=0; i<stationNum; ++i)
+            if (stationhash[i]==s) return i;
         return STATION_NUM;
     }
     UINT price(const UINT &sid,const UINT &tid){
         return priceprefix[tid]-priceprefix[sid];
     }
     UINT seat(const UINT &sid,const UINT &tid,const UINT &dayID){
-        UINT ret=seatNum;
-        for (UINT i=sid+1; i<=tid; ++i)
-            ret=std::min(ret,findticket(trainind,dayID,i));
-        return ret;
+        return findticketmin(trainind,dayID,sid+1,tid);
     }
     void buy(const UINT &sid,const UINT &tid,const UINT &dayID,const UINT &num){
         for (UINT i=sid+1; i<=tid; ++i)
@@ -148,7 +166,7 @@ public:
 };
 struct ticketinfo{
     UINT trainID;
-    Time t1,t2;
+    OTime t1,t2;
     UINT seat,price;
 };
 static FakeBpt<UINT,MYSTR<21> > trainname("trainname.bin");
@@ -202,7 +220,7 @@ public:
         if (!tmp.second) return false;
         return con[tmp.first].query(trainname,std::cout,in["-d"]);
     }
-    ticketinfo query_ticket(const UINT &trainID,const MYSTR<31> &s,const MYSTR<31> &t,const Date &d){
+    ticketinfo query_ticket(const UINT &trainID,const ULL &s,const ULL &t,const Date &d){
         train tr=con[trainID];
         UINT sid=tr.findstation(s),tid=tr.findstation(t);
         UINT dayid=tr.DayID(sid,d);

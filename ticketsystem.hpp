@@ -8,6 +8,7 @@
 #include "trainsystem.hpp"
 #include "ticketinnersystem.hpp"
 #include <bits/stdc++.h>
+//long long sum=0;
 class ticketsystem{
     usersystem us;
     trainsystem ts;
@@ -91,7 +92,9 @@ public:
         //need to be done
     }
     void query_ticket(const parse &in){
+        //int t=clock();
         if (!tis.query_ticket(in)) std::cout<<-1<<'\n';
+        //sum+=t-clock();
         //need to be done
     }
     void query_transfer(const parse &in){
@@ -118,6 +121,7 @@ public:
     }
     void exit(const parse &in){
         //need to be done
+        //std::cerr<<sum/1000.0<<std::endl;
         std::cout<<"bye"<<std::endl;
     }
 public:

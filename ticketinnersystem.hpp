@@ -16,6 +16,7 @@
 #include <map>
 #include "lib/fakebpt.hpp"
 typedef std::string STR;
+typedef unsigned long long ULL;
 struct traininfo{
     UINT trainID;
     Date date_b,date_e;
@@ -65,8 +66,8 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    BPlusTree<std::pair<MYSTR<31>,UINT>,traininfo> c;//multimap hai mei gai
-    BPlusTree<std::pair<MYSTR<31>,UINT>,UINT > d;
+    BPlusTree<std::pair<ULL,UINT>,traininfo> c;//multimap hai mei gai
+    BPlusTree<std::pair<ULL,UINT>,UINT > d;
     BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
     BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
@@ -98,9 +99,9 @@ public:
         if (!pts->list.count(tmp.first)&&tmp.second){
             train t=pts->con[tmp.first];
             for (UINT i=0; i<t.stationNum-1; ++i){
-                c.insert(std::make_pair(std::make_pair(t.stations[i],trainnum),traininfo(t.trainind,t.leavingtime(i,0).date,
+                c.insert(std::make_pair(std::make_pair(t.stationhash[i],trainnum),traininfo(t.trainind,t.leavingtime(i,0).date,
                                                                                          t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
-                d.insert(std::make_pair(std::make_pair(t.stations[i+1],trainnum),t.trainind));
+                d.insert(std::make_pair(std::make_pair(t.stationhash[i+1],trainnum),t.trainind));
             }
             pts->list.insert(tmp.first,true);
             return true;
@@ -109,15 +110,16 @@ public:
     }
     bool query_ticket(const parse &in){
         //if (in.count("-debug")) std::cerr<<in["-s"]<<" "<<in["-t"]<<" "<<in["-d"]<<" "<<in["-p"]<<" "<<c.size()<<std::endl;
-        auto pr=c.range_find(std::make_pair(in["-s"],0),std::make_pair(in["-s"],trainnum));
+        auto ins=myhash(in["-s"]),intt=myhash(in["-t"]);
+        auto pr=c.range_find(std::make_pair(ins,0),std::make_pair(ins,trainnum));
 
         vrsize=0;
         for (auto &i:pr) {
             //if (in.count("-debug")&&i.trainID==MYSTR<20>("imperiouswaves")) std::cerr<<i.trainID<<" "<<i.date_b<<" "<<i.date_e<<std::endl;
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {//maybeslow
-                UINT tmp=pts->con[i.second.trainID].findstation(in["-t"]);
-                if (tmp==STATION_NUM||tmp<pts->con[i.second.trainID].findstation(in["-s"])) continue;
-                vr[vrsize++] = pts->query_ticket(i.second.trainID, in["-s"], in["-t"], in["-d"]);
+                UINT tmp=pts->con[i.second.trainID].findstation(intt);
+                if (tmp==STATION_NUM||tmp<pts->con[i.second.trainID].findstation(ins)) continue;
+                vr[vrsize++] = pts->query_ticket(i.second.trainID, ins, intt, in["-d"]);
             }
         }
         mysort(vr,vr+vrsize,(in.count("-p")&&in["-p"]=="time")?[](ticketinfo &x,ticketinfo &y){
@@ -133,33 +135,35 @@ public:
     bool query_transfer(const parse &in){//neng bu neng hai shi tong yi liang che
         //an suo xu shi jian pai
         //std::cerr<<"query_transfer"<<in["-s"]<<" "<<in["-t"]<<std::endl;
-        auto pr=c.range_find(std::make_pair(in["-s"],0),std::make_pair(in["-s"],trainnum));
-        sjtu::map<MYSTR<31>,sjtu::vector<firsttraininfo> > mp;
+        ULL ins=myhash(in["-s"]),intt=myhash(in["-t"]);
+        //if (in.count("-debug")) std::cerr<<ins<<" "<<intt<<std::endl;
+        auto pr=c.range_find(std::make_pair(ins,0),std::make_pair(ins,trainnum));
+        sjtu::map<ULL,sjtu::vector<firsttraininfo> > mp;
         for (auto &i:pr)
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
                 train t=pts->con[i.second.trainID];
-                UINT sid=t.findstation(in["-s"]),dayID=t.DayID(sid,in["-d"]);
+                UINT sid=t.findstation(ins),dayID=t.DayID(sid,in["-d"]);
                 for (UINT i=sid+1; i<t.stationNum; ++i){
                     //auto p=mp.find(t.stations[i]);
                     if (!in.count("-p")||in["-p"]=="time"){
 //                        if (p==mp.end()||p->second.mtime>t.arrivetime(i,dayID))
-                          mp[t.stations[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
+                          mp[t.stationhash[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
                     }
                     else{
 //                        if (p==mp.end()||p->second.price>t.price(sid,i))
-                          mp[t.stations[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
+                          mp[t.stationhash[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
                     }
                 }
             }
-        auto pv=d.range_find(std::make_pair(in["-t"],0),std::make_pair(in["-t"],trainnum));
+        auto pv=d.range_find(std::make_pair(intt,0),std::make_pair(intt,trainnum));
         UINT minn=1e9,minn2=1e9;
         std::ostringstream ss;
         for (UINT i=0; i<pv.size(); ++i){
             train t=pts->con[pv[i].second];
             //if (in.count("-debug")) std::cerr<<t.trainID<<std::endl;
-            UINT tid=t.findstation(in["-t"]);
+            UINT tid=t.findstation(intt);
             for (UINT i=0; i<tid; ++i) {
-                auto tmp = mp.find(t.stations[i]);
+                auto tmp = mp.find(t.stationhash[i]);
                 if (tmp == mp.end()) continue;
                 for (auto pp = tmp->second.begin(); pp != tmp->second.end(); ++pp) {
                     auto p=*pp;
@@ -174,12 +178,12 @@ public:
                                 ss << in["-s"] << " ";
                                 ss << p.stime << " ";
                                 ss << "-> ";
-                                ss << t.stations[i] << " ";
+                                ss << stations[t.stationhash[i]] << " ";
                                 ss << p.mtime << " ";
                                 ss << p.price << " ";
                                 ss << p.seat << "\n";
                                 ss << trainname[t.trainind] << " ";
-                                ss << t.stations[i] << " ";
+                                ss << stations[t.stationhash[i]] << " ";
                                 ss << t.leavingtime(i, j) << " ";
                                 ss << "-> ";
                                 ss << in["-t"] << " ";
@@ -218,7 +222,7 @@ public:
         auto tmp=pts->trainname2[in["-i"]];
         if (!pts->list.count(tmp)) return false;
         train t=pts->con[tmp];
-        UINT sid=t.findstation(in["-f"]),tid=t.findstation(in["-t"]);
+        UINT sid=t.findstation(myhash(in["-f"])),tid=t.findstation(myhash(in["-t"]));
         if (sid>=tid||sid==STATION_NUM||tid==STATION_NUM) return false;
         if (!t.inrange(sid,in["-d"])) return false;
         UINT DayID=t.DayID(sid,in["-d"]);
@@ -279,10 +283,10 @@ public:
             std::cout << "[" << stat[tmp.stat] << "] ";
             train t=pts->con[tmp.trainID];
             std::cout<<trainname[t.trainind]<<" ";
-            std::cout<<t.stations[tmp.sid]<<" ";
+            std::cout<<stations[t.stationhash[tmp.sid]]<<" ";
             std::cout<<t.leavingtime(tmp.sid,tmp.dayID)<<" ";
             std::cout<<"-> ";
-            std::cout<<t.stations[tmp.tid]<<" ";
+            std::cout<<stations[t.stationhash[tmp.tid]]<<" ";
             std::cout<<t.arrivetime(tmp.tid,tmp.dayID)<<" ";
             std::cout<<t.price(tmp.sid,tmp.tid)<<" ";
             std::cout<<tmp.num<<'\n';

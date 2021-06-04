@@ -9,9 +9,9 @@ typedef std::string STR;
 typedef std::size_t UINT;
 template<int N>
 class MYSTR{
+public:
     UINT top;
     char ch[N];
-public:
     MYSTR(){
         memset(ch,0,sizeof(ch));
         top=0;

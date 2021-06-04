@@ -40,7 +40,7 @@ int main() {
     while (getline(std::cin,input)){
         ++cnt;
         //std::cerr<<"cnt"<<cnt<<std::endl;
-        /*(if (cnt==1453) {
+        /*if (cnt==806) {
             input += " -debug fuck";
             std::cerr << "input---------" << input << '\n';
         }*/

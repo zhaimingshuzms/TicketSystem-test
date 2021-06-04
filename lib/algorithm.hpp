@@ -41,4 +41,11 @@ void mysort(T* be,T* en,bool (*f)(T &,T &)){
     //need to be done
     if (be<en) qsort(be,--en,f);
 }
+const unsigned long long A=317;
+const unsigned long long B=10000000000000000ull+9;
+unsigned long long myhash(const MYSTR<31> &s){
+    unsigned long long ret=0;
+    for (UINT i=0; s.ch[i]; ++i) ret=(ret*A+s.ch[i])%B;
+    return ret;
+}
 #endif //TICKETSYSTEM_ALGORITHM_HPP
