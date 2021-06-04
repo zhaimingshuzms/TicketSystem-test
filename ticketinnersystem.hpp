@@ -101,7 +101,7 @@ public:
                                                                                          t.leavingtime(i,t.saleDate_e-t.saleDate_b).date)));
                 d.insert(std::make_pair(std::make_pair(t.stations[i+1],trainnum),t.trainID));
             }
-            pts->list.update(in["-i"],true);
+            pts->list.insert(in["-i"],true);
             return true;
         }
         return false;
@@ -227,7 +227,7 @@ public:
         //if (in.count("-debug")) std::cerr<<t.seat(sid,tid,DayID)<<std::endl;
         if (satisfied(t,o)){
             t.buy(sid,tid,DayID,required);
-            pts->con.update(in["-i"],t);
+            //pts->con.update(in["-i"],t);
             orderlist.insert(std::make_pair(std::make_pair(in["-u"],++ordernum),o));
             std::cout<<(unsigned long long)t.price(sid,tid)*o.num<<'\n';
             return true;
@@ -266,10 +266,11 @@ public:
                 orderlist.update(std::make_pair(o.userID,pd[i].first.second),o);
             }
         }
-        pts->con.update(o.trainID,t);
+        //pts->con.update(o.trainID,t);
         return true;
     }
     bool query_order(const parse &in){
+        //std::cerr<<"orderlist"<<orderlist.size()<<" "<<ordernum<<std::endl;
         auto pr=orderlist.range_find(std::make_pair(in["-u"],0),std::make_pair(in["-u"],ordernum));
         std::cout<<pr.size()<<std::endl;
          for (auto i=(int)(pr.size())-1; i>=0; --i) {

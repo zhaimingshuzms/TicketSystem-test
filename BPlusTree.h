@@ -11,7 +11,7 @@ using namespace std;
 
 template<class Key, class Data, const int M = 200>
 class BPlusTree {
-private:
+public:
     struct node {
         long son_address[M + 5] = {0};
         Data data_value[M + 5];
@@ -343,7 +343,11 @@ public:
             if (j == n->size || n->index[j] > key1) pos = n->son_address[j];
             else pos = n->son_address[j + 1];
         }
-        if (j == n->size) return vec;
+        if (j == n->size){
+            if (n->nxt==-1) return vec;
+            n=file->read(n->nxt);
+            j=0;
+        }
         while (n->index[j] <= key2) {
             //std::cerr<<(n->index[j])<<" "<<n->nxt<<std::endl;
             vec.push_back(make_pair(n->index[j], n->data_value[j]));
