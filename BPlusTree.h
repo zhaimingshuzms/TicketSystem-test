@@ -9,7 +9,7 @@
 
 using namespace std;
 
-template<class Key, class Data, const int M = 200>
+template<class Key, class Data, const int M = 200,int LEN=200>
 class BPlusTree {
 public:
     struct node {
@@ -44,7 +44,7 @@ public:
 
     long root = -1;
     int depth = 0, leaf_size = 0;
-    FileManager<node> *file;
+    FileManager<node,LEN> *file;
     MYSTR<20> s;
 
     //to insert a Key into a no_leaf node
@@ -158,7 +158,7 @@ public:
         if (!f) root=-1,depth=0,leaf_size=0;
         else f.read(reinterpret_cast<char *>(this),sizeof(*this));
         f.close();
-        file = new FileManager<node>(file_name);
+        file = new FileManager<node,LEN>(file_name);
     }
 
     ~BPlusTree() {

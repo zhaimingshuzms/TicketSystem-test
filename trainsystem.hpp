@@ -176,8 +176,8 @@ class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
     //BPlusTree<UINT,bool> list;//modified
-    BPlusTree<UINT,train,50> con;//ji de 10
-    BPlusTree<MYSTR<21>,UINT> trainname2;
+    BPlusTree<UINT,train,50,150> con;//ji de 10
+    BPlusTree<MYSTR<21>,UINT,200,200> trainname2;
     UINT trainind;
 public:
     trainsystem():con("train.bin"),trainname2("trainname2.bin"){

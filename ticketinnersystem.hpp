@@ -67,10 +67,10 @@ struct firsttraininfo{
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
-    BPlusTree<std::pair<ULL,UINT>,traininfo> c;//multimap hai mei gai
-    BPlusTree<std::pair<ULL,UINT>,UINT> d;
-    BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
-    BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
+    BPlusTree<std::pair<ULL,UINT>,traininfo,200,10000> c;//multimap hai mei gai
+    BPlusTree<std::pair<ULL,UINT>,UINT,200,10000> d;
+    BPlusTree<std::pair<MYSTR<21>,UINT>,order,200,10000> orderlist;
+    BPlusTree<std::pair<exact_train,UINT>,order,200,10000> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
     UINT trainnum;

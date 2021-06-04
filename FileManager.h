@@ -9,7 +9,7 @@
 #include "HashMap.h"
 
 using namespace std;
-template<class T>
+template<class T,int LEN>
 class LRUCache {
 private:
     struct node {
@@ -43,7 +43,7 @@ private:
     }
 
 public:
-    explicit LRUCache(fstream &_file, int _size = 150) : size(_size), file(_file) {}
+    explicit LRUCache(fstream &_file, int _size = LEN) : size(_size), file(_file) {}
 
     ~LRUCache() {
         for (; head; head = tail) {
@@ -89,11 +89,11 @@ public:
     void modify(long offset) {table[offset]->is_modify=true;}
 };
 
-template<class T>
+template<class T,int LEN>
 class FileManager {
 private:
     fstream file;
-    LRUCache<T> *cache= nullptr;
+    LRUCache<T,LEN> *cache= nullptr;
 public:
     explicit FileManager(const string &file_name) {
         file.open(file_name, ios::out | ios::in | ios::binary);
@@ -101,7 +101,7 @@ public:
         file.close();
         file.open(file_name, ios::in | ios::out | ios::binary);
         if (cache) delete cache;
-        cache=new LRUCache<T>(file);
+        cache=new LRUCache<T,LEN>(file);
     }
 
     ~FileManager() { delete cache;file.close(); }
