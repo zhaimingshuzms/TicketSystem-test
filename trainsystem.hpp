@@ -184,13 +184,17 @@ public:
         p.close();
         p.open("ticket.bin",std::ios_base::out|std::ios_base::in|std::ios_base::binary);
 
-        std::ifstream infile("num2.bin",std::ios_base::in|std::ios_base::binary);
+        std::ifstream infile("num.bin",std::ios_base::in|std::ios_base::binary);
         if (!infile.is_open()) trainind=0;
-        else infile.read(reinterpret_cast<char *>(&trainind),sizeof(trainind));
+        else{
+            infile.seekg(sizeof(UINT)*2,ios::beg);
+            infile.read(reinterpret_cast<char *>(&trainind),sizeof(trainind));
+        }
         infile.close();
     }
     ~trainsystem(){
-        std::ofstream outfile("num2.bin",std::ios_base::out|std::ios_base::binary);
+        std::ofstream outfile("num.bin",std::ios_base::in|std::ios_base::out|std::ios_base::binary);
+        outfile.seekp(sizeof(UINT)*2,ios::beg);
         outfile.write(reinterpret_cast<const char *>(&trainind),sizeof(trainind));
         outfile.close();
         p.close();
