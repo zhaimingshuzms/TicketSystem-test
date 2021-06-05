@@ -9,7 +9,7 @@
 
 using namespace std;
 
-template<class Key, class Data, const int M = 110,int LEN=7000>
+template<class Key, class Data, const int M = 110,int LEN=8000>
 class BPlusTree {
 public:
     struct node {

@@ -121,7 +121,7 @@ public:
     void query_order(const parse &in){
         //int t=clock();
         if (us.already_login(in["-u"])&&tis.query_order(in));
-        else std::cout<<-1<<std::endl;
+        else std::cout<<-1<<'\n';
         //sum+=clock()-t;
         //need to be done
     }

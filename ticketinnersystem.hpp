@@ -23,7 +23,7 @@ typedef std::string STR;
 typedef unsigned long long ULL;
 struct traininfo{
     UINT trainID;
-    Date date_b,date_e;
+    ODate date_b,date_e;
     UINT sid;
     traininfo(){
     }
@@ -122,7 +122,7 @@ public:
         vrsize=0;
         for (auto &i:pr) {
             //if (in.count("-debug")&&i.trainID==MYSTR<20>("imperiouswaves")) std::cerr<<i.trainID<<" "<<i.date_b<<" "<<i.date_e<<std::endl;
-            if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {//maybeslow
+            if (i.second.date_b <= ODate(in["-d"]) && ODate(in["-d"]) <= i.second.date_e) {//maybeslow
                 train &&t=pts->con[i.second.trainID];
                 UINT tmp=t.findstation(intt);
                 if (tmp==STATION_NUM||tmp<i.second.sid) continue;
@@ -148,7 +148,7 @@ public:
         // fast fast fast fast
         mp.clear();
         for (auto &i:pr)
-            if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
+            if (i.second.date_b <= ODate(in["-d"]) && ODate(in["-d"]) <= i.second.date_e) {
                 train &&t=pts->con[i.second.trainID];
                 UINT sid=i.second.sid,dayID=t.DayID(sid,in["-d"]);
                 if (!in.count("-p")||in["-p"]=="time"){
@@ -289,7 +289,7 @@ public:
         //std::cerr<<"orderlist"<<orderlist.size()<<" "<<ordernum<<std::endl;
         ULL uhash=myhash2(in["-u"]);
         auto pr=orderlist.range_find(std::make_pair(uhash,0),std::make_pair(uhash,ordernum));
-        std::cout<<pr.size()<<std::endl;
+        std::cout<<pr.size()<<'\n';
          for (auto i=(int)(pr.size())-1; i>=0; --i) {
             auto &tmp=pr[i].second;
             std::cout << "[" << stat[tmp.stat] << "] ";

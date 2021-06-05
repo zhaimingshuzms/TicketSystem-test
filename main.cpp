@@ -35,6 +35,7 @@ int main() {
     //std::cout<<mp[1]<<" "<<mp[2]<<std::endl;
     //freopen("./data/basic_2/1.in","r",stdin);
     //freopen("T.out","w",stdout);STR input;
+    //std::cerr<<sizeof(traininfo)<<std::endl;
     ticketsystem s;
     STR input;
     int cnt=0;
