@@ -66,7 +66,8 @@ private:
     const int dividend;
     Hash h;
 
-    int get_hash_value(const Key &_key) { return h(_key) % dividend; }
+    int get_hash_value(const Key &_key) {
+        return h(_key) % dividend; }
 
 public:
     explicit HashMap(int _dividend = LEN) : dividend(_dividend) { hash_value = new list[dividend]; }
@@ -83,7 +84,8 @@ public:
         siz--;
     }
 
-    Data &operator[](const Key &_key) { return hash_value[get_hash_value(_key)].find(_key)->data; }
+    Data &operator[](const Key &_key) {
+        return hash_value[get_hash_value(_key)].find(_key)->data; }
 
     int count(const Key &_key) {
         if (hash_value[get_hash_value(_key)].find(_key)) return 1;

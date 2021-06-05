@@ -8,7 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include "algorithm.hpp"
-typedef size_t UINT;
+typedef unsigned int UINT;
 typedef std::string STR;
 const UINT MIN_PER_HOUR=60u;
 const UINT MIN_PER_DAY=24u*MIN_PER_HOUR;

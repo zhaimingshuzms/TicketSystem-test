@@ -6,7 +6,7 @@
 #define TICKETSYSTEM_MYSTRING_HPP
 #include <iostream>
 typedef std::string STR;
-typedef std::size_t UINT;
+typedef unsigned int UINT;
 template<int N>
 class MYSTR{
 public:

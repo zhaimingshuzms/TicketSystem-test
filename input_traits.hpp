@@ -8,7 +8,7 @@
 #include "./lib/map.hpp"
 typedef std::string STR;
 typedef STR::const_iterator STRITER;
-typedef std::size_t UINT;
+typedef unsigned int UINT;
 class input_traits{
     STR str;
     STRITER it;

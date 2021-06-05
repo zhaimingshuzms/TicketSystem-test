@@ -13,7 +13,7 @@
 #include "input_traits.hpp"
 #include "BPlusTree.h"
 typedef std::string STR;
-typedef std::size_t UINT;
+typedef unsigned int UINT;
 struct userdata{//er jin zhi wen jian xu yao
     MYSTR<21> username;
     MYSTR<31> password;

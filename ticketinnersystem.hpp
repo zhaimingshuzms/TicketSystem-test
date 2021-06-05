@@ -228,8 +228,12 @@ public:
     bool buy_ticket(const parse &in){
         //if (in.count("-debug")) std::cerr<<in["-i"]<<std::endl;
         auto tmp=pts->trainname2[in["-i"]];
+        //if (in.count("-debug")) std::cerr<<"tmp"<<tmp<<std::endl;
         train &&t=pts->con[tmp];
+        //if (in.count("-debug")) std::cerr<<trainname[t.trainind]<<" "<<t.released<<" "<<t.startTime<<std::endl;
+        //if (in.count("-debug")) std::cerr<<"???"<<std::endl;
         if (!t.released) return false;
+        //if (in.count("-debug")) std::cerr<<"!!!"<<std::endl;
         UINT sid=t.findstation(myhash(in["-f"])),tid=t.findstation(myhash(in["-t"]));
         if (sid>=tid||sid==STATION_NUM||tid==STATION_NUM) return false;
         if (!t.inrange(sid,in["-d"])) return false;

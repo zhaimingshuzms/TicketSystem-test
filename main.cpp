@@ -4,6 +4,7 @@
 #include "lib/fakebpt.hpp"
 #include "lib/time.hpp"
 #include <bits/stdc++.h>
+#include "lib/filearray.hpp"
 /*class ftrain {
 public:
     MYSTR<21> trainID;
@@ -33,18 +34,24 @@ int main() {
     //mp.insert(std::make_pair(2,3));
     //std::cout<<mp[1]<<" "<<mp[2]<<std::endl;
     //freopen("./data/basic_2/1.in","r",stdin);
-    //freopen("T.out","w",stdout);
-    STR input;
+    //freopen("T.out","w",stdout);STR input;
     ticketsystem s;
+    STR input;
     int cnt=0;
     while (getline(std::cin,input)){
         ++cnt;
         //std::cerr<<"cnt"<<cnt<<std::endl;
-        /*if (cnt==806) {
+        /*if (cnt==116) {
             input += " -debug fuck";
             std::cerr << "input---------" << input << '\n';
         }*/
         if (!s.respond(input)) break;
     }
+    //filearray<int,1000> f("test.bin");
+    //for (int i=0; i<=1; ++i) f.insert(i,int());
+    //f.insert(11,"44445");
+    //f[1]=1;
+    //for (int i=0; i<=1; ++i)
+    //std::cout<<f[i]<<std::endl;
     return 0;
 }

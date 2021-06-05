@@ -86,15 +86,17 @@ public:
         return &(n->value);
     }
 
-    void modify(long offset) {table[offset]->is_modify=true;}
+    void modify(long offset) {
+        table[offset]->is_modify=true;
+    }
 };
 
 template<class T,int LEN>
 class FileManager {
 private:
     fstream file;
-    LRUCache<T,LEN> *cache= nullptr;
 public:
+    LRUCache<T,LEN> *cache= nullptr;
     explicit FileManager(const string &file_name) {
         file.open(file_name, ios::out | ios::in | ios::binary);
         if (!file) file.open(file_name, ios::out | ios::binary);
@@ -110,11 +112,11 @@ public:
         return cache->load(offset);
     }
 
-    void save(T& val, long offset = -1) {
+    void save(const T& val, long offset = -1) {
         if (offset == -1 || offset==End()) {
             file.seekp(0, ios::end);
             offset=file.tellg();
-            file.write(reinterpret_cast<char *>(&val), sizeof(T));
+            file.write(reinterpret_cast<const char *>(&val), sizeof(T));
             cache->load(offset);
         }
         else cache->modify(offset);

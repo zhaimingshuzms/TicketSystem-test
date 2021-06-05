@@ -12,6 +12,7 @@
 #include "lib/algorithm.hpp"
 #include "input_traits.hpp"
 #include "BPlusTree.h"
+#include "lib/filearray.hpp"
 #include <map>
 typedef std::string STR;
 typedef unsigned char CHA;
@@ -67,7 +68,7 @@ public:
     OTime leavingTimes[STATION_NUM];
     UINT priceprefix[STATION_NUM];
     Time startTime;
-    bool released;
+    UINT released;
     train(){
     }
     train(const UINT &s2,const UINT &s3,const STR &s4,
@@ -176,7 +177,7 @@ class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
     //BPlusTree<UINT,bool> list;//modified
-    BPlusTree<UINT,train,50> con;//ji de 10
+    filearray<train,1000> con;//ji de 10
     BPlusTree<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:
@@ -207,7 +208,7 @@ public:
         trainname.insert(std::make_pair(trainind,in["-i"]));
         trainname2.insert(std::make_pair(in["-i"],trainind));
         train t(strtonum(in["-n"]),strtonum(in["-m"]),in["-s"],in["-p"],in["-x"],in["-t"],in["-o"],in["-d"],in["-y"],trainind);
-        con.insert(std::make_pair(trainind,t));
+        con.insert(trainind,t);
         ++trainind;
         return true;
     }
@@ -215,7 +216,7 @@ public:
         auto tmp=trainname2.find(in["-i"]);
         if (!tmp.second) return false;
         if (con[tmp.first].released) return false;
-        con.erase(tmp.first);
+        //con.erase(tmp.first); need to think about
         trainname.erase(tmp.first);
         trainname2.erase(in["-i"]);
         //std::cerr<<"success"<<std::endl;
