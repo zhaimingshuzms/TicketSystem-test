@@ -16,16 +16,16 @@ private:
         T value;
         long address;
         node *pre = nullptr, *nxt = nullptr;
-        HashMap<long,node*,LEN-3> *the_map;
+        HashMap<long,node*,LEN> *the_map;
         bool is_modify = false;
 
-        node(const T &_value, long _address, HashMap<long, node *,LEN-3> *_the_map) : value(_value), address(_address),
+        node(const T &_value, long _address, HashMap<long, node *,LEN> *_the_map) : value(_value), address(_address),
                                                                                 the_map(_the_map) {
             the_map->insert(make_pair(_address, this));
         }
     } *head = nullptr, *tail = nullptr;
 
-    HashMap<long ,node*,LEN-3> table;
+    HashMap<long ,node*,LEN> table;
     int size;
     fstream &file;
 

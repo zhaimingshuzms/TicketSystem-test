@@ -70,7 +70,7 @@ private:
         return h(_key) % dividend; }
 
 public:
-    explicit HashMap(int _dividend = LEN) : dividend(_dividend) { hash_value = new list[dividend]; }
+    explicit HashMap(int _dividend = LEN-3) : dividend(_dividend) { hash_value = new list[dividend]; }
 
     ~HashMap() { delete[] hash_value; }
 

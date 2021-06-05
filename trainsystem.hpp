@@ -112,7 +112,7 @@ public:
         released=false;
         //std::cout<<startTime<<" "<<saleDate_b<<" "<<saleDate_e<<" "<<saleDate_e-saleDate_e<<std::endl;
     }
-    bool query(BPlusTree<UINT,MYSTR<21> > &trainname,std::ostream &os,const Date &d){
+    bool query(filearray<MYSTR<21>,5000> &trainname,std::ostream &os,const Date &d){
         if (d<saleDate_b||saleDate_e<d) return false;
         os<<trainname[trainind]<<" "<<type<<'\n';
         Time st=startTime;
@@ -172,12 +172,12 @@ struct ticketinfo{
     OTime t1,t2;
     UINT seat,price;
 };
-static BPlusTree<UINT,MYSTR<21> > trainname("trainname.bin");
+static filearray<MYSTR<21>,5000> trainname("trainname.bin");
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
     //BPlusTree<UINT,bool> list;//modified
-    filearray<train,1000> con;//ji de 10
+    filearray<train,5000> con;//ji de 10
     BPlusTree<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:
@@ -205,7 +205,7 @@ public:
     //hao xiang zi sha
     bool add_train(const parse &in){
         if (trainname2.count(in["-i"])) return false;
-        trainname.insert(std::make_pair(trainind,in["-i"]));
+        trainname.insert(trainind,in["-i"]);
         trainname2.insert(std::make_pair(in["-i"],trainind));
         train t(strtonum(in["-n"]),strtonum(in["-m"]),in["-s"],in["-p"],in["-x"],in["-t"],in["-o"],in["-d"],in["-y"],trainind);
         con.insert(trainind,t);
@@ -217,7 +217,7 @@ public:
         if (!tmp.second) return false;
         if (con[tmp.first].released) return false;
         //con.erase(tmp.first); need to think about
-        trainname.erase(tmp.first);
+        //trainname.erase(tmp.first);
         trainname2.erase(in["-i"]);
         //std::cerr<<"success"<<std::endl;
         return true;
