@@ -67,7 +67,7 @@ struct firsttraininfo{
     firsttraininfo(){
     }
 };
-sjtu::map<ULL,sjtu::vector<firsttraininfo> > mp;
+std::unordered_map<ULL,sjtu::vector<firsttraininfo> > mp;
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
@@ -150,17 +150,14 @@ public:
         for (auto &i:pr)
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
                 train &&t=pts->con[i.second.trainID];
-                UINT sid=t.findstation(ins),dayID=t.DayID(sid,in["-d"]);
-                for (UINT i=sid+1; i<t.stationNum; ++i){
-                    //auto p=mp.find(t.stations[i]);
-                    if (!in.count("-p")||in["-p"]=="time"){
-//                        if (p==mp.end()||p->second.mtime>t.arrivetime(i,dayID))
-                          mp[t.stationhash[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
-                    }
-                    else{
-//                        if (p==mp.end()||p->second.price>t.price(sid,i))
-                          mp[t.stationhash[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
-                    }
+                UINT sid=i.second.sid,dayID=t.DayID(sid,in["-d"]);
+                if (!in.count("-p")||in["-p"]=="time"){
+                    for (UINT i=sid+1; i<t.stationNum; ++i)
+                        mp[t.stationhash[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
+                }
+                else{
+                    for (UINT i=sid+1; i<t.stationNum; ++i)
+                        mp[t.stationhash[i]].push_back(firsttraininfo(t.trainind,t.leavingtime(sid,dayID),t.arrivetime(i,dayID),t.price(sid,i),t.seat(sid,i,dayID)));
                 }
             }
         auto pv=d.range_find(std::make_pair(intt,0),std::make_pair(intt,trainnum));
