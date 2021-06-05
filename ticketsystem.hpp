@@ -8,7 +8,7 @@
 #include "trainsystem.hpp"
 #include "ticketinnersystem.hpp"
 #include <bits/stdc++.h>
-//long long sum=0;
+long long sum=0;
 class ticketsystem{
     usersystem us;
     trainsystem ts;
@@ -79,12 +79,16 @@ public:
         //need to be done
     }
     void release_train(const parse &in){
+        //int t=clock();
         if (tis.release_train(in)) std::cout<<0<<'\n';
         else std::cout<<-1<<'\n';
+        //sum+=clock()-t;
         //need to be done
     }
     void query_train(const parse &in){
+        //int t=clock();
         if (!ts.query_train(in)) std::cout<<-1<<'\n';
+        //sum+=clock()-t;
         //need to be done
     }
     void delete_train(const parse &in){
@@ -94,9 +98,9 @@ public:
         //need to be done
     }
     void query_ticket(const parse &in){
-        //int t=clock();
+        int t=clock();
         if (!tis.query_ticket(in)) std::cout<<-1<<'\n';
-        //sum+=t-clock();
+        sum+=t-clock();
         //need to be done
     }
     void query_transfer(const parse &in){
@@ -113,8 +117,10 @@ public:
         //sum+=clock()-t;
     }
     void query_order(const parse &in){
+        //int t=clock();
         if (us.already_login(in["-u"])&&tis.query_order(in));
         else std::cout<<-1<<std::endl;
+        //sum+=clock()-t;
         //need to be done
     }
     void refund_ticket(const parse &in){
@@ -127,7 +133,7 @@ public:
     }
     void exit(const parse &in){
         //need to be done
-        //std::cerr<<sum/1000.0<<std::endl;
+        std::cerr<<sum/1000.0<<std::endl;
         std::cout<<"bye"<<std::endl;
     }
 public:

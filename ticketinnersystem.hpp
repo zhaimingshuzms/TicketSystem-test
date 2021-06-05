@@ -67,7 +67,7 @@ struct firsttraininfo{
     firsttraininfo(){
     }
 };
-gp_hash_table<ULL,sjtu::vector<firsttraininfo> > mp;
+sjtu::map<ULL,sjtu::vector<firsttraininfo> > mp;
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
