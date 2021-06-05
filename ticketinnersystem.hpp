@@ -16,6 +16,9 @@
 #include <map>
 #include "lib/fakebpt.hpp"
 #include <unordered_map>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/hash_policy.hpp>
+using namespace __gnu_pbds;
 typedef std::string STR;
 typedef unsigned long long ULL;
 struct traininfo{
@@ -64,7 +67,7 @@ struct firsttraininfo{
     firsttraininfo(){
     }
 };
-map<ULL,sjtu::vector<firsttraininfo> > mp;
+gp_hash_table<ULL,sjtu::vector<firsttraininfo> > mp;
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
