@@ -89,6 +89,9 @@ public:
         if (hash_value[get_hash_value(_key)].find(_key)) return 1;
         return 0;
     }
+    auto find(const Key &_key){
+        return hash_value[get_hash_value(_key)].find(_key);
+    }
 
     int size() { return siz; }
 

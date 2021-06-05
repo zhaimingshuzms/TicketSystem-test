@@ -64,7 +64,7 @@ struct firsttraininfo{
     firsttraininfo(){
     }
 };
-
+map<ULL,sjtu::vector<firsttraininfo> > mp;
 class ticketinnersystem{
     static const int TRAINNUM=100000;//2 times too large
     trainsystem * pts;
@@ -120,9 +120,10 @@ public:
         for (auto &i:pr) {
             //if (in.count("-debug")&&i.trainID==MYSTR<20>("imperiouswaves")) std::cerr<<i.trainID<<" "<<i.date_b<<" "<<i.date_e<<std::endl;
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {//maybeslow
-                UINT tmp=pts->con[i.second.trainID].findstation(intt);
+                train &&t=pts->con[i.second.trainID];
+                UINT tmp=t.findstation(intt);
                 if (tmp==STATION_NUM||tmp<i.second.sid) continue;
-                vr[vrsize++] = pts->query_ticket(i.second.trainID, i.second.sid, tmp, in["-d"]);
+                vr[vrsize++] = pts->query_ticket(t,i.second.trainID, i.second.sid, tmp, in["-d"]);
             }
         }
         mysort(vr,vr+vrsize,(in.count("-p")&&in["-p"]=="time")?[](ticketinfo &x,ticketinfo &y){
@@ -141,7 +142,8 @@ public:
         ULL ins=myhash(in["-s"]),intt=myhash(in["-t"]);
         //if (in.count("-debug")) std::cerr<<ins<<" "<<intt<<std::endl;
         auto pr=c.range_find(std::make_pair(ins,0),std::make_pair(ins,trainnum));
-        std::unordered_map<ULL,sjtu::vector<firsttraininfo> > mp;// fast fast fast fast
+        // fast fast fast fast
+        mp.clear();
         for (auto &i:pr)
             if (i.second.date_b <= in["-d"] && Date(in["-d"]) <= i.second.date_e) {
                 train &&t=pts->con[i.second.trainID];
@@ -167,7 +169,7 @@ public:
             UINT tid=t.findstation(intt);
             for (UINT i=0; i<tid; ++i) {
                 auto tmp = mp.find(t.stationhash[i]);
-                if (tmp == mp.end()) continue;
+                if (tmp==mp.end()) continue;
                 for (auto pp = tmp->second.begin(); pp != tmp->second.end(); ++pp) {
                     auto p=*pp;
                     if (p.trainID == t.trainind) continue;

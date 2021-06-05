@@ -226,8 +226,7 @@ public:
         if (!tmp.second) return false;
         return con[tmp.first].query(trainname,std::cout,in["-d"]);
     }
-    ticketinfo query_ticket(const UINT &trainID,const UINT &sid,const UINT &tid,const Date &d){
-        train tr=con[trainID];
+    ticketinfo query_ticket(train &tr,const UINT &trainID,const UINT &sid,const UINT &tid,const Date &d){
         //UINT sid=tr.findstation(s),tid=tr.findstation(t);
         UINT dayid=tr.DayID(sid,d);
         ticketinfo ret;
