@@ -9,8 +9,8 @@
 #include "ticketinnersystem.hpp"
 #include <bits/stdc++.h>
 #include <map>
-map<string,int> mpp;
-static int sum=0;
+//map<string,int> mpp;
+//static int sum=0;
 class ticketsystem{
     usersystem us;
     trainsystem ts;
@@ -145,10 +145,10 @@ public:
     }
     bool judge(const parse &in){
         //if (in["-or"]=="buy_ticket"&&(in["-d"]=="07-02"||in["-d"]=="07-03")&&in["-i"]=="LeavesofGrass") std::cerr<<in["-u"]<<" "<<in["-f"]<<" "<<in["-t"]<<" "<<in["-d"]<<" "<<in["-n"]<<std::endl;
-        int t=clock();
+        //int t=clock();
         (this->*pp[func_nametoind[in["-or"]]])(in);
-        mpp[in["-or"]]+=clock()-t;
-        sum+=clock()-t;
+        //mpp[in["-or"]]+=clock()-t;
+        //sum+=clock()-t;
         if (in["-or"]=="exit") return false;
         return true;
     }

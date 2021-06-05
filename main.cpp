@@ -49,7 +49,6 @@ int main() {
     }
     //for (auto i:mpp)
     //    cerr<<i.first<<" "<<i.second<<endl;
-    if (mpp["query_transfer"]>=0.1*sum) throw;
 
     //filearray<int,1000> f("test.bin");
     //for (int i=0; i<=1; ++i) f.insert(i,int());
