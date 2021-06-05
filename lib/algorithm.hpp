@@ -48,4 +48,9 @@ unsigned long long myhash(const MYSTR<31> &s){
     for (UINT i=0; s.ch[i]; ++i) ret=(ret*A+s.ch[i])%B;
     return ret;
 }
+unsigned long long myhash2(const MYSTR<21> &s){
+    unsigned long long ret=0;
+    for (UINT i=0; s.ch[i]; ++i) ret=(ret*A+s.ch[i])%B;
+    return ret;
+}
 #endif //TICKETSYSTEM_ALGORITHM_HPP

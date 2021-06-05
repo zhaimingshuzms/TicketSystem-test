@@ -65,9 +65,12 @@ public:
         return false;
     }
     bool query_profile(const parse & in){
-        if (loginlist.count(in["-c"])&&con.count(in["-u"])&&(con[in["-c"]].privilege>con[in["-u"]].privilege||in["-c"]==in["-u"])){
-            std::cout<<con[in["-u"]]<<'\n';
-            return true;
+        if (loginlist.count(in["-c"])){
+            auto tmp=con.find(in["-u"]);
+            if (tmp.second&&(con[in["-c"]].privilege>tmp.first.privilege||in["-c"]==in["-u"])){
+                std::cout<<tmp.first<<'\n';
+                return true;
+            }
         }
         return false;
     }

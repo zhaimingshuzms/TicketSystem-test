@@ -31,7 +31,7 @@ struct traininfo{
     }
 };
 struct order{
-    MYSTR<21> userID;
+    ULL userID;
     UINT trainID;
     UINT dayID;
     UINT sid,tid;
@@ -39,7 +39,7 @@ struct order{
     UINT stat;//0 pending 1 success 2 refunded
     order(){
     }
-    order(const MYSTR<21> &s1,const UINT &s2,UINT s3,UINT s4,UINT s5,UINT s6,UINT s7):userID(s1),trainID(s2),dayID(s3),sid(s4),tid(s5),num(s6),stat(s7){
+    order(const ULL &s1,const UINT &s2,UINT s3,UINT s4,UINT s5,UINT s6,UINT s7):userID(s1),trainID(s2),dayID(s3),sid(s4),tid(s5),num(s6),stat(s7){
     }
 };
 struct exact_train{
@@ -73,7 +73,7 @@ class ticketinnersystem{
     trainsystem * pts;
     BPlusTree<std::pair<ULL,UINT>,traininfo> c;//multimap hai mei gai
     BPlusTree<std::pair<ULL,UINT>,UINT> d;
-    BPlusTree<std::pair<MYSTR<21>,UINT>,order> orderlist;
+    BPlusTree<std::pair<ULL,UINT>,order> orderlist;
     BPlusTree<std::pair<exact_train,UINT>,order> pendingqueue;
     ticketinfo *vr;
     UINT vrsize;
@@ -232,23 +232,24 @@ public:
         if (!t.released) return false;
         //if (in.count("-debug")) std::cerr<<"!!!"<<std::endl;
         UINT sid=t.findstation(myhash(in["-f"])),tid=t.findstation(myhash(in["-t"]));
+        ULL uhash=myhash2(in["-u"]);
         if (sid>=tid||sid==STATION_NUM||tid==STATION_NUM) return false;
         if (!t.inrange(sid,in["-d"])) return false;
         UINT DayID=t.DayID(sid,in["-d"]);
         UINT required=strtonum(in["-n"]);
         if (required>t.seatNum) return false;//6.2
-        order o(in["-u"],tmp,DayID,sid,tid,required,1);
+        order o(uhash,tmp,DayID,sid,tid,required,1);
         //if (in.count("-debug")) std::cerr<<t.seat(sid,tid,DayID)<<std::endl;
         if (satisfied(t,o)){
             t.buy(sid,tid,DayID,required);
             //pts->con.update(in["-i"],t);
-            orderlist.insert(std::make_pair(std::make_pair(in["-u"],++ordernum),o));
+            orderlist.insert(std::make_pair(std::make_pair(uhash,++ordernum),o));
             std::cout<<(unsigned long long)t.price(sid,tid)*o.num<<'\n';
             return true;
         }
         if (!in.count("-q")||in["-q"]=="false") return false;
         o.stat=0;
-        orderlist.insert(std::make_pair(std::make_pair(in["-u"],++ordernum),o));
+        orderlist.insert(std::make_pair(std::make_pair(uhash,++ordernum),o));
         pendingqueue.insert(std::make_pair(std::make_pair(exact_train(tmp,DayID),ordernum),o));
         std::cout<<"queue"<<'\n';
         return true;
@@ -256,7 +257,8 @@ public:
     bool refund_ticket(const parse &in){
         UINT num;
         if (!in.count("-n")) num=1; else num=strtonum(in["-n"]);
-        auto pr=orderlist.range_find(std::make_pair(in["-u"],0),std::make_pair(in["-u"],ordernum));
+        ULL uhash=myhash2(in["-u"]);
+        auto pr=orderlist.range_find(std::make_pair(uhash,0),std::make_pair(uhash,ordernum));
         if (num>pr.size()) return false;
         order &o=pr[pr.size()-num].second;//dao le
         if (o.stat==2) return false;
@@ -285,7 +287,8 @@ public:
     }
     bool query_order(const parse &in){
         //std::cerr<<"orderlist"<<orderlist.size()<<" "<<ordernum<<std::endl;
-        auto pr=orderlist.range_find(std::make_pair(in["-u"],0),std::make_pair(in["-u"],ordernum));
+        ULL uhash=myhash2(in["-u"]);
+        auto pr=orderlist.range_find(std::make_pair(uhash,0),std::make_pair(uhash,ordernum));
         std::cout<<pr.size()<<std::endl;
          for (auto i=(int)(pr.size())-1; i>=0; --i) {
             auto &tmp=pr[i].second;
