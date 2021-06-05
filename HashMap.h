@@ -7,7 +7,7 @@
 
 #include <functional>
 
-template<class Key, class Data, class Hash=std::hash<Key>>
+template<class Key, class Data, int LEN,class Hash=std::hash<Key>>
 class HashMap {
 private:
     class list {
@@ -69,7 +69,7 @@ private:
     int get_hash_value(const Key &_key) { return h(_key) % dividend; }
 
 public:
-    explicit HashMap(int _dividend = 397) : dividend(_dividend) { hash_value = new list[dividend]; }
+    explicit HashMap(int _dividend = LEN) : dividend(_dividend) { hash_value = new list[dividend]; }
 
     ~HashMap() { delete[] hash_value; }
 

@@ -176,7 +176,7 @@ class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
     //BPlusTree<UINT,bool> list;//modified
-    BPlusTree<UINT,train,100> con;//ji de 10
+    BPlusTree<UINT,train,47,100> con;//ji de 10
     FakeBpt<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:
