@@ -112,7 +112,7 @@ public:
         released=false;
         //std::cout<<startTime<<" "<<saleDate_b<<" "<<saleDate_e<<" "<<saleDate_e-saleDate_e<<std::endl;
     }
-    bool query(filearray<MYSTR<21>,5000> &trainname,std::ostream &os,const Date &d){
+    bool query(filearray<MYSTR<21>,10000> &trainname,std::ostream &os,const Date &d){
         if (d<saleDate_b||saleDate_e<d) return false;
         os<<trainname[trainind]<<" "<<type<<'\n';
         Time st=startTime;
@@ -172,12 +172,12 @@ struct ticketinfo{
     OTime t1,t2;
     UINT seat,price;
 };
-static filearray<MYSTR<21>,5000> trainname("trainname.bin");
+static filearray<MYSTR<21>,10000> trainname("trainname.bin");
 class ticketinnersystem;
 class trainsystem{
     friend class ticketinnersystem;
     //BPlusTree<UINT,bool> list;//modified
-    filearray<train,5000> con;//ji de 10
+    filearray<train,10000> con;//ji de 10
     BPlusTree<MYSTR<21>,UINT> trainname2;
     UINT trainind;
 public:

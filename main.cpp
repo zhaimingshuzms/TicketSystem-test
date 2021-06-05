@@ -47,6 +47,8 @@ int main() {
         }*/
         if (!s.respond(input)) break;
     }
+    //for (auto i:mpp)
+    //    cerr<<i.first<<" "<<i.second<<endl;
     //filearray<int,1000> f("test.bin");
     //for (int i=0; i<=1; ++i) f.insert(i,int());
     //f.insert(11,"44445");
