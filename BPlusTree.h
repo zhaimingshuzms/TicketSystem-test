@@ -9,7 +9,7 @@
 
 using namespace std;
 
-template<class Key, class Data, const int M = 200,int LEN=150>
+template<class Key, class Data, const int M = 200,int LEN=200>
 class BPlusTree {
 public:
     struct node {
@@ -311,17 +311,20 @@ public:
     }
 
     pair<Data, bool> _find(const Key &key) {
-        Data data;
-        if (!leaf_size) return make_pair(data, false);
+        if (!leaf_size) return make_pair(Data(), false);
         long pos = root;
         node *n;
         for (int i = 0; i < depth; i++) {
             n = file->read(pos);
+            //int j=n->size;
             int j;
             for (j = 0; j < n->size; j++) if (n->index[j] >= key) break;
+            /*for (int l=0,r=n->size-1,mi=(l+r)>>1; l<=r; mi=(l+r)>>1){
+                if (n->index[mi] >= key) j=mi,r=mi-1; else l=mi+1;
+            }*/
             if (i == depth - 1) {
                 if (j == n->size || n->index[j] > key) {
-                    return make_pair(data, false);
+                    return make_pair(Data(), false);
                 }
                 return make_pair(n->data_value[j], true);
             }
