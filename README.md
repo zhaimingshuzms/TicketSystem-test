@@ -10,5 +10,5 @@
 
 - ![TicketSystem](doc/TicketSystem.png)
 - ![usersystem](doc/usersystem.png)
-- ![trainsystem](doc/trainSystem.png)
-- ![ticketinnersystem](doc/ticketinnerSystem.png)
+- ![trainsystem](doc/trainsystem.png)
+- ![ticketinnersystem](doc/ticketinnersystem.png)
