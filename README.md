@@ -8,7 +8,7 @@
 
 #### 后端架构
 
-- ![avatar](.\doc\TicketSystem.png)
-- ![avatar](.\doc\usersystem.png)
-- ![avatar](.\doc\trainSystem.png)
-- ![avatar](.\doc\ticketinnerSystem.png)
+- ![TicketSystem](doc/TicketSystem.png)
+- ![usersystem](doc/usersystem.png)
+- ![trainsystem](doc/trainSystem.png)
+- ![ticketinnersystem](doc/ticketinnerSystem.png)
